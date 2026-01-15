@@ -9,6 +9,8 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  std:String,
+  medium: String,
   rollNumber: String,
   examName: String,
   center: String,
