@@ -65,7 +65,7 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ========= STUDENT NAME + SEAT NO (ONE LINE, CENTER) ========= */
     const nameSeatY = 160;
-    const nameSeatText = `Student Name: ${student.fullName}     |     Seat No.: ${student.rollNumber}`;
+    const nameSeatText = `Name: ${student.fullName}          Seat No.: ${student.rollNumber}`;
     doc.font("Helvetica-Bold").fontSize(14)
       .text(nameSeatText, 0, nameSeatY, { width: pageWidth, align: "center" });
 
