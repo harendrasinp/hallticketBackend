@@ -66,8 +66,8 @@ router.post("/generate-hallticket", async (req, res) => {
 
     doc.fontSize(12).font("Helvetica-Bold");
     doc.text("Student Name :", labelX, y);
-    doc.text("Std :", labelX, y);
-    doc.text("Medium :", labelX, y);
+    doc.text("Std :", labelX, y += gap);
+    doc.text("Medium :", labelX, y += gap);
     doc.text("Center :", labelX, y += gap);
     doc.text("Exam :", labelX, y += gap);
     doc.text("Seat No. :", labelX, y += gap);
@@ -76,8 +76,8 @@ router.post("/generate-hallticket", async (req, res) => {
     y = 220;
     doc.font("Helvetica");
     doc.text(student.fullName, valueX, y);
-    doc.text(student.std, valueX, y);
-    doc.text(student.medium, valueX, y);
+    doc.text(student.std, valueX, y += gap);
+    doc.text(student.medium, valueX, y += gap);
     doc.text(student.center, valueX, y += gap);
     doc.text(student.examName, valueX, y += gap);
     doc.text(student.rollNumber, valueX, y += gap);
