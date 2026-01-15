@@ -74,11 +74,8 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Seat No.: ${student.rollNumber}`, rightX, lineY);
 
-    // Horizontal line below
-    doc.moveTo(50, lineY + 18)
-       .lineTo(pageWidth - 50, lineY + 18)
-       .stroke();
-
+    
+   
     /* ========= TABLE (REST DETAILS) ========= */
     const col1Width = 180;
     const col2Width = 280;
