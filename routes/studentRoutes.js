@@ -89,7 +89,7 @@ router.post("/generate-hallticket", async (req, res) => {
       });
 
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Seat No.: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
+      .text(`Seat No: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
         width: seatTextWidth,
         align: "right",
         lineBreak: false
