@@ -18,14 +18,13 @@ router.post("/generate-hallticket", async (req, res) => {
     const dir = path.join(__dirname, "../halltickets");
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
-    // ⚠️ cache avoid for mobile
     const fileName = `${mobile}_${Date.now()}.pdf`;
     const filePath = path.join(dir, fileName);
 
     const doc = new PDFDocument({ size: "A4", margin: 40 });
     doc.pipe(fs.createWriteStream(filePath));
 
-    // ===== BORDER =====
+    // ===== PAGE BORDER =====
     doc.rect(20, 20, 555, 802).stroke();
 
     // ===== LOGOS =====
@@ -33,40 +32,68 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.image(path.join(__dirname, "../logos/tapi.png"), 465, 35, { width: 70 });
 
     // ===== TITLE =====
-    doc.font("Helvetica-Bold").fontSize(20)
+    doc.font("Helvetica-Bold")
+      .fontSize(20)
       .text("TAPI EDUCATION ACADEMY", 0, 60, { align: "center" });
 
     doc.moveDown(2);
     doc.fontSize(18).text("HALL TICKET", { align: "center", underline: true });
 
-    // ===== STUDENT DETAILS (MOBILE SAFE) =====
-    let y = 220;
-    const labelX = 100;
-    const valueX = 260;
-    const gap = 28;
+    // ===== TABLE CONFIG =====
+    const tableX = 80;
+    const tableY = 220;
+    const rowHeight = 32;
+    const col1Width = 180;
+    const col2Width = 280;
+    const tableWidth = col1Width + col2Width;
 
-    const drawRow = (label, value) => {
+    const rows = [
+      ["Student Name", student.fullName],
+      ["Std", student.std],
+      ["Medium", student.medium],
+      ["Center", student.center],
+      ["Exam", student.examName],
+      ["Seat No.", student.rollNumber],
+      ["Exam Date", student.examDate],
+    ];
+
+    // ===== TABLE BORDER =====
+    doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
+
+    // ===== ROWS =====
+    rows.forEach((row, index) => {
+      const y = tableY + index * rowHeight;
+
+      // Horizontal line
+      if (index > 0) {
+        doc
+          .moveTo(tableX, y)
+          .lineTo(tableX + tableWidth, y)
+          .stroke();
+      }
+
+      // Vertical line (column separator)
+      doc
+        .moveTo(tableX + col1Width, y)
+        .lineTo(tableX + col1Width, y + rowHeight)
+        .stroke();
+
+      // LABEL
       doc.font("Helvetica-Bold")
         .fontSize(12)
-        .text(label, labelX, y, { width: 140, lineBreak: false });
-
-      doc.font("Helvetica")
-        .fontSize(12)
-        .text(String(value ?? "-"), valueX, y, {
-          width: 260,
-          lineBreak: false
+        .text(row[0], tableX + 10, y + 9, {
+          width: col1Width - 20,
+          lineBreak: false,
         });
 
-      y += gap;
-    };
-
-    drawRow("Student Name :", student.fullName);
-    drawRow("Std :", student.std);
-    drawRow("Medium :", student.medium);
-    drawRow("Center :", student.center);
-    drawRow("Exam :", student.examName);
-    drawRow("Seat No. :", student.rollNumber);
-    drawRow("Exam Date :", student.examDate);
+      // VALUE
+      doc.font("Helvetica")
+        .fontSize(12)
+        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 9, {
+          width: col2Width - 20,
+          lineBreak: false,
+        });
+    });
 
     // ===== FOOTER =====
     doc.fontSize(10)
