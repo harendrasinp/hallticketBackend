@@ -64,20 +64,23 @@ router.post("/generate-hallticket", async (req, res) => {
       .text("HALL TICKET", 0, 130, { width: pageWidth, align: "center", underline: true });
 
     /* ========= STUDENT NAME + SEAT NO (ONE LINE, CENTER) ========= */
+    const nameSeatY = 160;
+    const nameSeatText = `Student Name: ${student.fullName}     |     Seat No.: ${student.rollNumber}`;
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(
-        `Student Name: ${student.fullName}     |     Seat No.: ${student.rollNumber}`,
-        0,
-        160,
-        { width: pageWidth, align: "center" }
-      );
+      .text(nameSeatText, 0, nameSeatY, { width: pageWidth, align: "center" });
+
+    // 🔥 Horizontal line below Student Name + Seat No.
+    const lineY = nameSeatY + 18;
+    doc.moveTo(100, lineY)
+       .lineTo(pageWidth - 100, lineY)
+       .stroke();
 
     /* ========= TABLE (REST DETAILS) ========= */
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-    const tableY = 200; // thoda niche
+    const tableY = lineY + 20; // table below the horizontal line
     const rowHeight = 34;
 
     const rows = [
@@ -97,11 +100,9 @@ router.post("/generate-hallticket", async (req, res) => {
 
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
-      // Label
       doc.font("Helvetica-Bold").fontSize(12)
         .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
 
-      // Value
       doc.font("Helvetica").fontSize(12)
         .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
     });
