@@ -24,28 +24,50 @@ router.post("/generate-hallticket", async (req, res) => {
     const doc = new PDFDocument({ size: "A4", margin: 40 });
     doc.pipe(fs.createWriteStream(filePath));
 
-    // ===== PAGE BORDER =====
+    /* ================= PAGE BORDER ================= */
     doc.rect(20, 20, 555, 802).stroke();
 
-    // ===== LOGOS =====
-    doc.image(path.join(__dirname, "../logos/pplogo.png"), 40, 35, { width: 70 });
-    doc.image(path.join(__dirname, "../logos/tapi.png"), 465, 35, { width: 70 });
+    /* ================= LOGOS ================= */
+    doc.image(path.join(__dirname, "../logos/pplogo.png"), 60, 40, { width: 70 });
+    doc.image(path.join(__dirname, "../logos/tapi.png"), 445, 40, { width: 70 });
 
-    // ===== TITLE =====
+    /* ================= CENTER HEADER ================= */
+    let headerY = 45;
+
     doc.font("Helvetica-Bold")
       .fontSize(20)
-      .text("TAPI EDUCATION ACADEMY", 0, 60, { align: "center" });
+      .text("TAPI EDUCATION ACADEMY", 0, headerY, { align: "center" });
 
-    doc.moveDown(2);
-    doc.fontSize(18).text("HALL TICKET", { align: "center", underline: true });
+    doc.font("Helvetica-Bold")
+      .fontSize(15)
+      .text("P.P SAVANI VIDHYAMANDIR", 0, headerY + 26, { align: "center" });
 
-    // ===== TABLE CONFIG =====
-    const tableX = 80;
-    const tableY = 220;
-    const rowHeight = 32;
+    doc.font("Helvetica")
+      .fontSize(10)
+      .text(
+        "AT POST KATHGADH VYARA, DIST. TAPI",
+        0,
+        headerY + 46,
+        { align: "center" }
+      );
+
+    /* ================= HALL TICKET TITLE ================= */
+    doc.font("Helvetica-Bold")
+      .fontSize(18)
+      .text("HALL TICKET", 0, 125, {
+        align: "center",
+        underline: true,
+      });
+
+    /* ================= TABLE CONFIG ================= */
+    const pageCenterX = doc.page.width / 2;
+
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
+    const tableX = pageCenterX - tableWidth / 2;
+    const tableY = 200;
+    const rowHeight = 34;
 
     const rows = [
       ["Student Name", student.fullName],
@@ -57,45 +79,42 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Exam Date", student.examDate],
     ];
 
-    // ===== TABLE BORDER =====
+    /* ================= TABLE OUTER BORDER ================= */
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
-    // ===== ROWS =====
     rows.forEach((row, index) => {
       const y = tableY + index * rowHeight;
 
       // Horizontal line
       if (index > 0) {
-        doc
-          .moveTo(tableX, y)
-          .lineTo(tableX + tableWidth, y)
-          .stroke();
+        doc.moveTo(tableX, y)
+           .lineTo(tableX + tableWidth, y)
+           .stroke();
       }
 
-      // Vertical line (column separator)
-      doc
-        .moveTo(tableX + col1Width, y)
-        .lineTo(tableX + col1Width, y + rowHeight)
-        .stroke();
+      // Vertical line (column divider)
+      doc.moveTo(tableX + col1Width, y)
+         .lineTo(tableX + col1Width, y + rowHeight)
+         .stroke();
 
-      // LABEL
+      // Label
       doc.font("Helvetica-Bold")
         .fontSize(12)
-        .text(row[0], tableX + 10, y + 9, {
+        .text(row[0], tableX + 10, y + 10, {
           width: col1Width - 20,
           lineBreak: false,
         });
 
-      // VALUE
+      // Value
       doc.font("Helvetica")
         .fontSize(12)
-        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 9, {
+        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, {
           width: col2Width - 20,
           lineBreak: false,
         });
     });
 
-    // ===== FOOTER =====
+    /* ================= FOOTER ================= */
     doc.fontSize(10)
       .text(
         "Note: This hall ticket must be carried to the examination hall.",
