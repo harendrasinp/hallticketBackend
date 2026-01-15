@@ -61,13 +61,22 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ========= TITLE ========= */
     doc.font("Helvetica-Bold").fontSize(18)
-      .text("HALL TICKET", 0, 130, { width: pageWidth, align: "center", underline: true });
+      .text("HALL TICKET", 0, 130, {
+        width: pageWidth,
+        align: "center",
+        underline: true
+      });
 
-    /* ========= STUDENT NAME LEFT + SEAT NO RIGHT (ONE LINE) ========= */
+    /* ========= TABLE WIDTH (used for alignment) ========= */
+    const col1Width = 180;
+    const col2Width = 280;
+    const tableWidth = col1Width + col2Width;
+    const tableX = centerX - tableWidth / 2;
+
+    /* ========= STUDENT NAME + SEAT NO ========= */
     const lineY = 200;
-    const leftX = tableX + 10;              // ✔ aligned with table
-    const rightX = tableX + tableWidth - 140; // ✔ balanced right side
-
+    const leftX = tableX + 10;                // ✔ perfectly aligned with table
+    const rightX = tableX + tableWidth - 140; // ✔ right side balanced
 
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Name: ${student.fullName}`, leftX, lineY);
@@ -75,14 +84,8 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Seat No.: ${student.rollNumber}`, rightX, lineY);
 
-
-
-    /* ========= TABLE (REST DETAILS) ========= */
-    const col1Width = 180;
-    const col2Width = 280;
-    const tableWidth = col1Width + col2Width;
-    const tableX = centerX - tableWidth / 2;
-    const tableY = lineY + 30; // table below the horizontal line
+    /* ========= TABLE ========= */
+    const tableY = lineY + 30;
     const rowHeight = 34;
 
     const rows = [
@@ -112,7 +115,12 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ========= FOOTER ========= */
     doc.fontSize(10)
-      .text("Note: This hall ticket must be carried to the examination hall.", 0, 740, { width: pageWidth, align: "center" });
+      .text(
+        "Note: This hall ticket must be carried to the examination hall.",
+        0,
+        740,
+        { width: pageWidth, align: "center" }
+      );
 
     doc.end();
 
