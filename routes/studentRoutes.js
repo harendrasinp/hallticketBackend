@@ -75,8 +75,8 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ========= STUDENT NAME + SEAT NO ========= */
     const lineY = 200;
-    const leftX = tableX + 10;                // ✔ perfectly aligned with table
-    const rightX = tableX + tableWidth - 140; // ✔ right side balanced
+    const leftX = tableX +5;                // ✔ perfectly aligned with table
+    const rightX = tableX + tableWidth - 150; // ✔ right side balanced
 
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Name: ${student.fullName}`, leftX, lineY);
