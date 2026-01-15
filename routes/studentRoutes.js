@@ -27,8 +27,7 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ========= PDF ========= */
     const doc = new PDFDocument({ size: "A4", margin: 40 });
-    const stream = fs.createWriteStream(filePath);
-    doc.pipe(stream);
+    doc.pipe(fs.createWriteStream(filePath));
 
     /* ========= BORDER ========= */
     doc.rect(20, 20, 555, 802).stroke();
@@ -123,13 +122,21 @@ router.post("/generate-hallticket", async (req, res) => {
         .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
     });
 
-    /* ========= STAMPS ========= */
+    /* ========= STAMPS BELOW TABLE ========= */
     const stampY = tableY + rowHeight * rows.length + 30;
     const stampWidth = 90;
 
-    doc.image(path.join(__dirname, "../stamps/stamp_left.png"), tableX, stampY, { width: stampWidth });
+    // LEFT STAMP (dummy image path)
     doc.image(
-      path.join(__dirname, "../stamps/stamp_right.png"),
+      path.join(__dirname, "../stamps/stampSign.png"),
+      tableX,
+      stampY,
+      { width: stampWidth }
+    );
+
+    // RIGHT STAMP (dummy image path)
+    doc.image(
+      path.join(__dirname, "../stamps/stamp1.png"),
       tableX + tableWidth - stampWidth,
       stampY,
       { width: stampWidth }
@@ -146,12 +153,9 @@ router.post("/generate-hallticket", async (req, res) => {
 
     doc.end();
 
-    /* ====== SEND RESPONSE AFTER PDF FINISH (MOBILE FIX) ====== */
-    stream.on("finish", () => {
-      res.json({
-        success: true,
-        pdfUrl: `/halltickets/${fileName}`,
-      });
+    res.json({
+      success: true,
+      pdfUrl: `/halltickets/${fileName}`,
     });
 
   } catch (err) {
