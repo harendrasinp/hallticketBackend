@@ -63,29 +63,25 @@ router.post("/generate-hallticket", async (req, res) => {
     const labelX = 100;
     const valueX = 260;
     const gap = 28;
-    const labelWidth = 140;
-    const valueWidth = 260;
 
-    // LABELS
     doc.fontSize(12).font("Helvetica-Bold");
-    doc.text("Student Name :", labelX, y, { width: labelWidth });
-    doc.text("Std :", labelX, y += gap, { width: labelWidth });
-    doc.text("Medium :", labelX, y += gap, { width: labelWidth });
-    doc.text("Center :", labelX, y += gap, { width: labelWidth });
-    doc.text("Exam :", labelX, y += gap, { width: labelWidth });
-    doc.text("Seat No. :", labelX, y += gap, { width: labelWidth });
-    doc.text("Exam Date :", labelX, y += gap, { width: labelWidth });
+    doc.text("Student Name :", labelX, y);
+    doc.text("Std :", labelX, y += gap);
+    doc.text("Medium :", labelX, y += gap);
+    doc.text("Center :", labelX, y += gap);
+    doc.text("Exam :", labelX, y += gap);
+    doc.text("Seat No. :", labelX, y += gap);
+    doc.text("Exam Date :", labelX, y += gap);
 
-    // VALUES
     y = 220;
     doc.font("Helvetica");
-    doc.text(student.fullName, valueX, y, { width: valueWidth });
-    doc.text(student.std, valueX, y += gap, { width: valueWidth });
-    doc.text(student.medium, valueX, y += gap, { width: valueWidth });
-    doc.text(student.center, valueX, y += gap, { width: valueWidth });
-    doc.text(student.examName, valueX, y += gap, { width: valueWidth });
-    doc.text(student.rollNumber, valueX, y += gap, { width: valueWidth });
-    doc.text(student.examDate, valueX, y += gap, { width: valueWidth });
+    doc.text(student.fullName, valueX, y);
+    doc.text(student.std, valueX, y += gap);
+    doc.text(student.medium, valueX, y += gap);
+    doc.text(student.center, valueX, y += gap);
+    doc.text(student.examName, valueX, y += gap);
+    doc.text(student.rollNumber, valueX, y += gap);
+    doc.text(student.examDate, valueX, y += gap);
 
     /* ===== FOOTER ===== */
     doc
