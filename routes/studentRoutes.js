@@ -77,7 +77,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
 
-    /* ========= NAME LEFT & SEAT NO RIGHT ========= */
+    /* ========= NAME & SEAT ========= */
     const lineY = 200;
     const seatTextWidth = 160;
 
@@ -113,7 +113,6 @@ router.post("/generate-hallticket", async (req, res) => {
       const y = tableY + i * rowHeight;
 
       if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
-
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
       doc.font("Helvetica-Bold").fontSize(12)
@@ -122,6 +121,26 @@ router.post("/generate-hallticket", async (req, res) => {
       doc.font("Helvetica").fontSize(12)
         .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
     });
+
+    /* ========= STAMPS BELOW TABLE ========= */
+    const stampY = tableY + rowHeight * rows.length + 30;
+    const stampWidth = 90;
+
+    // LEFT STAMP (dummy image path)
+    doc.image(
+      path.join(__dirname, "../stamps/stampSign.png"),
+      tableX,
+      stampY,
+      { width: stampWidth }
+    );
+
+    // RIGHT STAMP (dummy image path)
+    doc.image(
+      path.join(__dirname, "../stamps/stamp1.png"),
+      tableX + tableWidth - stampWidth,
+      stampY,
+      { width: stampWidth }
+    );
 
     /* ========= FOOTER ========= */
     doc.fontSize(10)
