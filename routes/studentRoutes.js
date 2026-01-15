@@ -27,31 +27,67 @@ router.post("/generate-hallticket", async (req, res) => {
     /* ================= PAGE BORDER ================= */
     doc.rect(20, 20, 555, 802).stroke();
 
-    /* ================= LOGOS ================= */
-    doc.image(path.join(__dirname, "../logos/pplogo.png"), 60, 40, { width: 70 });
-    doc.image(path.join(__dirname, "../logos/tapi.png"), 445, 40, { width: 70 });
+    const pageWidth = doc.page.width;
+    const centerX = pageWidth / 2;
 
-    /* ================= CENTER HEADER ================= */
-    let headerY = 45;
+    /* ================= HEADER BLOCK ================= */
+    const logoSize = 65;
+    const logoGap = 25;
+    const headerY = 45;
+
+    // Total header width = logo + gap + text + gap + logo
+    const textBlockWidth = 360;
+    const headerWidth =
+      logoSize + logoGap + textBlockWidth + logoGap + logoSize;
+
+    const headerX = centerX - headerWidth / 2;
+
+    // Left logo
+    doc.image(
+      path.join(__dirname, "../logos/pplogo.png"),
+      headerX,
+      headerY,
+      { width: logoSize }
+    );
+
+    // Right logo
+    doc.image(
+      path.join(__dirname, "../logos/tapi.png"),
+      headerX + logoSize + logoGap + textBlockWidth + logoGap,
+      headerY,
+      { width: logoSize }
+    );
+
+    // Center text block
+    const textX = headerX + logoSize + logoGap;
 
     doc.font("Helvetica-Bold")
       .fontSize(20)
-      .text("TAPI EDUCATION ACADEMY", 0, headerY, { align: "center" });
+      .text("TAPI EDUCATION ACADEMY", textX, headerY, {
+        width: textBlockWidth,
+        align: "center",
+      });
 
     doc.font("Helvetica-Bold")
       .fontSize(15)
-      .text("P.P SAVANI VIDHYAMANDIR", 0, headerY + 26, { align: "center" });
+      .text("P.P SAVANI VIDHYAMANDIR", textX, headerY + 26, {
+        width: textBlockWidth,
+        align: "center",
+      });
 
     doc.font("Helvetica")
       .fontSize(10)
       .text(
         "AT POST KATHGADH VYARA, DIST. TAPI",
-        0,
+        textX,
         headerY + 46,
-        { align: "center" }
+        {
+          width: textBlockWidth,
+          align: "center",
+        }
       );
 
-    /* ================= HALL TICKET TITLE ================= */
+    /* ================= TITLE ================= */
     doc.font("Helvetica-Bold")
       .fontSize(18)
       .text("HALL TICKET", 0, 125, {
@@ -59,13 +95,11 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true,
       });
 
-    /* ================= TABLE CONFIG ================= */
-    const pageCenterX = doc.page.width / 2;
-
+    /* ================= TABLE ================= */
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
-    const tableX = pageCenterX - tableWidth / 2;
+    const tableX = centerX - tableWidth / 2;
     const tableY = 200;
     const rowHeight = 34;
 
@@ -79,25 +113,22 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Exam Date", student.examDate],
     ];
 
-    /* ================= TABLE OUTER BORDER ================= */
+    // Outer border
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
-    rows.forEach((row, index) => {
-      const y = tableY + index * rowHeight;
+    rows.forEach((row, i) => {
+      const y = tableY + i * rowHeight;
 
-      // Horizontal line
-      if (index > 0) {
+      if (i > 0) {
         doc.moveTo(tableX, y)
            .lineTo(tableX + tableWidth, y)
            .stroke();
       }
 
-      // Vertical line (column divider)
       doc.moveTo(tableX + col1Width, y)
          .lineTo(tableX + col1Width, y + rowHeight)
          .stroke();
 
-      // Label
       doc.font("Helvetica-Bold")
         .fontSize(12)
         .text(row[0], tableX + 10, y + 10, {
@@ -105,7 +136,6 @@ router.post("/generate-hallticket", async (req, res) => {
           lineBreak: false,
         });
 
-      // Value
       doc.font("Helvetica")
         .fontSize(12)
         .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, {
