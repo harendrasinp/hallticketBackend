@@ -63,19 +63,21 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(18)
       .text("HALL TICKET", 0, 130, { width: pageWidth, align: "center", underline: true });
 
-    /* ========= STUDENT NAME & SEAT NO (OUTSIDE TABLE) ========= */
+    /* ========= STUDENT NAME + SEAT NO (ONE LINE, CENTER) ========= */
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Student Name: ${student.fullName}`, 0, 160, { width: pageWidth, align: "center" });
-
-    doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Seat No.: ${student.rollNumber}`, 0, 180, { width: pageWidth, align: "center" });
+      .text(
+        `Student Name: ${student.fullName}     |     Seat No.: ${student.rollNumber}`,
+        0,
+        160,
+        { width: pageWidth, align: "center" }
+      );
 
     /* ========= TABLE (REST DETAILS) ========= */
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-    const tableY = 220; // thoda niche
+    const tableY = 200; // thoda niche
     const rowHeight = 34;
 
     const rows = [
@@ -86,16 +88,13 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Exam Date", student.examDate],
     ];
 
-    // Outer table border
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
     rows.forEach((row, i) => {
       const y = tableY + i * rowHeight;
 
-      // Horizontal line
       if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
 
-      // Vertical divider
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
       // Label
