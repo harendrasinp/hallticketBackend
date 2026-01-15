@@ -46,7 +46,7 @@ router.post("/generate-hallticket", async (req, res) => {
 
     // Left Logo
     doc.image(
-      path.join(__dirname, "../logos/pplogo.png"),
+      path.join(__dirname, "../logos/tapi.png"),
       headerX,
       headerY,
       { width: logoSize }
@@ -54,7 +54,7 @@ router.post("/generate-hallticket", async (req, res) => {
 
     // Right Logo
     doc.image(
-      path.join(__dirname, "../logos/tapi.png"),
+      path.join(__dirname, "../logos/pplogo.png"),
       headerX + logoSize + gap + textWidth + gap,
       headerY,
       { width: logoSize }
