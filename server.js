@@ -13,13 +13,16 @@ app.use(express.json());
 // static pdf access
 app.use("/halltickets", express.static(path.join(__dirname, "halltickets")));
 
-mongoose.connect(
-  "mongodb+srv://haren111990_db_user:Oug6a7qeZmxGK72E@halltickets.gmyrbmu.mongodb.net/?appName=halltickets"
-).then(() => console.log("MongoDB Connected"))
- .catch(err => console.log(err));
+// ✅ MongoDB connect (CORRECT)
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
 
+// routes
 app.use("/api/students", studentRoutes);
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// ✅ Render PORT handling (CORRECT)
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
