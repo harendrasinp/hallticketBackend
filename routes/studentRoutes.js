@@ -63,16 +63,20 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(18)
       .text("HALL TICKET", 0, 130, { width: pageWidth, align: "center", underline: true });
 
-    /* ========= STUDENT NAME + SEAT NO (ONE LINE, CENTER) ========= */
-    const nameSeatY = 160;
-    const nameSeatText = `Name: ${student.fullName}          Seat No.: ${student.rollNumber}`;
-    doc.font("Helvetica-Bold").fontSize(14)
-      .text(nameSeatText, 0, nameSeatY, { width: pageWidth, align: "center" });
+    /* ========= STUDENT NAME LEFT + SEAT NO RIGHT (ONE LINE) ========= */
+    const lineY = 160;
+    const leftX = 80;            // left margin for Student Name
+    const rightX = pageWidth - 180; // right position for Seat No.
 
-    // 🔥 Horizontal line below Student Name + Seat No.
-    const lineY = nameSeatY + 18;
-    doc.moveTo(100, lineY)
-       .lineTo(pageWidth - 100, lineY)
+    doc.font("Helvetica-Bold").fontSize(14)
+      .text(`Student Name: ${student.fullName}`, leftX, lineY);
+
+    doc.font("Helvetica-Bold").fontSize(14)
+      .text(`Seat No.: ${student.rollNumber}`, rightX, lineY);
+
+    // Horizontal line below
+    doc.moveTo(50, lineY + 18)
+       .lineTo(pageWidth - 50, lineY + 18)
        .stroke();
 
     /* ========= TABLE (REST DETAILS) ========= */
@@ -80,7 +84,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-    const tableY = lineY + 20; // table below the horizontal line
+    const tableY = lineY + 30; // table below the horizontal line
     const rowHeight = 34;
 
     const rows = [
@@ -91,6 +95,7 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Exam Date", student.examDate],
     ];
 
+    // Outer border
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
     rows.forEach((row, i) => {
