@@ -108,12 +108,12 @@ router.post("/generate-hallticket", async (req, res) => {
 
     const rows = [
       ["Student Name", student.fullName],
+      ["Seat No.", student.rollNumber],
       ["Std", student.std],
       ["Medium", student.medium],
-      ["Center", student.center],
       ["Exam", student.examName],
-      ["Seat No.", student.rollNumber],
       ["Exam Date", student.examDate],
+      ["Center", student.center],
     ];
 
     // Table outer border
