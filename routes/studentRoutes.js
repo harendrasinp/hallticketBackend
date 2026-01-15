@@ -128,10 +128,10 @@ router.post("/generate-hallticket", async (req, res) => {
     const stampWidth = 90;
 
     // LEFT STAMP (replace path with your own)
-    doc.image(path.join(__dirname, "../stamps/stamp_left.png"), tableX, stampY, { width: stampWidth });
+    doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, { width: stampWidth });
 
     // RIGHT STAMP (replace path with your own)
-    doc.image(path.join(__dirname, "../stamps/stamp_right.png"), tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
+    doc.image(path.join(__dirname, "../stamps/stamp1.png"), tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
 
     /* ===== FOOTER ===== */
     doc.fontSize(10)
