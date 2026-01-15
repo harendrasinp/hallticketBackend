@@ -23,7 +23,7 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ========= A4 PDF ========= */
     const doc = new PDFDocument({
-      size: "A4",          // ✅ A4 fixed
+      size: "A4",
       margin: 40,
     });
 
@@ -32,10 +32,10 @@ router.post("/generate-hallticket", async (req, res) => {
     /* ========= PAGE BORDER ========= */
     doc.rect(20, 20, 555, 802).stroke();
 
-    const pageWidth = doc.page.width;   // A4 = 595
+    const pageWidth = doc.page.width; // 595
     const centerX = pageWidth / 2;
 
-    /* ========= HEADER (TRUE CENTER) ========= */
+    /* ========= HEADER ========= */
     const logoSize = 65;
     const textWidth = 360;
     const gap = 20;
@@ -60,7 +60,6 @@ router.post("/generate-hallticket", async (req, res) => {
       { width: logoSize }
     );
 
-    // Center Text Block
     const textX = headerX + logoSize + gap;
 
     doc.font("Helvetica-Bold")
@@ -93,17 +92,44 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold")
       .fontSize(18)
       .text("HALL TICKET", 0, 130, {
-        width: pageWidth,   // 🔥 IMPORTANT
+        width: pageWidth,
         align: "center",
         underline: true,
       });
 
-    /* ========= TABLE (TRUE CENTER) ========= */
+    /* ========= EXAM INFO (ABOVE TABLE) ========= */
+    const infoY = 180;
+    const infoWidth = 500;
+    const infoX = centerX - infoWidth / 2;
+
+    doc.font("Helvetica-Bold")
+      .fontSize(12)
+      .text(
+        `Exam : ${student.examName}`,
+        infoX,
+        infoY,
+        { width: infoWidth / 2, align: "left" }
+      );
+
+    doc.font("Helvetica-Bold")
+      .fontSize(12)
+      .text(
+        `Exam Date : ${student.examDate}`,
+        infoX + infoWidth / 2,
+        infoY,
+        { width: infoWidth / 2, align: "right" }
+      );
+
+    doc.moveTo(infoX, infoY + 18)
+      .lineTo(infoX + infoWidth, infoY + 18)
+      .stroke();
+
+    /* ========= TABLE ========= */
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-    const tableY = 210;
+    const tableY = 235;
     const rowHeight = 34;
 
     const rows = [
@@ -111,43 +137,34 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Seat No.", student.rollNumber],
       ["Std", student.std],
       ["Medium", student.medium],
-      ["Exam", student.examName],
-      ["Exam Date", student.examDate],
       ["Center", student.center],
     ];
 
-    // Table outer border
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
     rows.forEach((row, i) => {
       const y = tableY + i * rowHeight;
 
-      // Horizontal lines
       if (i > 0) {
         doc.moveTo(tableX, y)
           .lineTo(tableX + tableWidth, y)
           .stroke();
       }
 
-      // Vertical divider
       doc.moveTo(tableX + col1Width, y)
         .lineTo(tableX + col1Width, y + rowHeight)
         .stroke();
 
-      // Label
       doc.font("Helvetica-Bold")
         .fontSize(12)
         .text(row[0], tableX + 10, y + 10, {
           width: col1Width - 20,
-          lineBreak: false,
         });
 
-      // Value
       doc.font("Helvetica")
         .fontSize(12)
         .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, {
           width: col2Width - 20,
-          lineBreak: false,
         });
     });
 
@@ -158,10 +175,11 @@ router.post("/generate-hallticket", async (req, res) => {
         0,
         740,
         {
-          width: pageWidth,   // 🔥 IMPORTANT
+          width: pageWidth,
           align: "center",
         }
       );
+
     doc.end();
 
     res.json({

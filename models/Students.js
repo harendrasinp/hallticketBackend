@@ -12,9 +12,9 @@ const studentSchema = new mongoose.Schema({
   std:String,
   medium: String,
   rollNumber: String,
-  examName: String,
-  center: String,
   examDate: String,
+  center: String,
+  examName: String,
 });
 
 module.exports = mongoose.model("Student", studentSchema);
