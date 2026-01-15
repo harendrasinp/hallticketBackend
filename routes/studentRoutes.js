@@ -7,7 +7,11 @@ const path = require("path");
 
 router.post("/generate-hallticket", async (req, res) => {
   try {
-    const { fullName, mobile } = req.body;
+    let { fullName, mobile } = req.body;
+
+    /* ========= CLEAN INPUT ========= */
+    fullName = fullName.trim().replace(/\s+/g, " ");
+    mobile = mobile.trim();
 
     const student = await Student.findOne({ fullName, mobile });
     if (!student) {
@@ -67,7 +71,7 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ========= TABLE SIZE (FOR ALIGNMENT) ========= */
+    /* ========= TABLE SIZE ========= */
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
@@ -85,9 +89,10 @@ router.post("/generate-hallticket", async (req, res) => {
       });
 
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Seat No: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
+      .text(`Seat No.: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
         width: seatTextWidth,
-        align: "right"
+        align: "right",
+        lineBreak: false
       });
 
     /* ========= TABLE ========= */
@@ -102,7 +107,6 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Exam Date", student.examDate],
     ];
 
-    // Outer border
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
     rows.forEach((row, i) => {
