@@ -65,8 +65,8 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ========= STUDENT NAME LEFT + SEAT NO RIGHT (ONE LINE) ========= */
     const lineY = 200;
-    const leftX = 63;            // left margin for Student Name
-    const rightX = pageWidth -158; // right position for Seat No.
+    const leftX = 65;            // left margin for Student Name
+    const rightX = pageWidth -150; // right position for Seat No.
 
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Name: ${student.fullName}`, leftX, lineY);
