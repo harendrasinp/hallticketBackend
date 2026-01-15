@@ -9,7 +9,7 @@ router.post("/generate-hallticket", async (req, res) => {
   try {
     let { fullName, mobile } = req.body;
 
-    /* ========= CLEAN INPUT ========= */
+    /* ===== CLEAN INPUT ===== */
     fullName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
@@ -18,24 +18,27 @@ router.post("/generate-hallticket", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    /* ========= FOLDER ========= */
+    /* ===== FOLDER ===== */
     const dir = path.join(__dirname, "../halltickets");
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
     const fileName = `${mobile}_${Date.now()}.pdf`;
     const filePath = path.join(dir, fileName);
 
-    /* ========= PDF ========= */
+    /* ===== PDF ===== */
     const doc = new PDFDocument({ size: "A4", margin: 40 });
-    doc.pipe(fs.createWriteStream(filePath));
 
-    /* ========= BORDER ========= */
-    doc.rect(20, 20, 555, 802).stroke();
+    // PDF Stream (mobile friendly)
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
 
     const pageWidth = doc.page.width;
     const centerX = pageWidth / 2;
 
-    /* ========= HEADER ========= */
+    /* ===== BORDER ===== */
+    doc.rect(20, 20, 555, 802).stroke();
+
+    /* ===== HEADER ===== */
     const logoSize = 65;
     const textWidth = 360;
     const gap = 20;
@@ -63,7 +66,7 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica").fontSize(10)
       .text("AT POST KATHGADH VYARA, DIST. TAPI", textX, headerY + 46, { width: textWidth, align: "center" });
 
-    /* ========= TITLE ========= */
+    /* ===== TITLE ===== */
     doc.font("Helvetica-Bold").fontSize(18)
       .text("HALL TICKET", 0, 130, {
         width: pageWidth,
@@ -71,13 +74,11 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ========= TABLE SIZE ========= */
+    /* ===== NAME & SEAT ===== */
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-
-    /* ========= NAME & SEAT ========= */
     const lineY = 200;
     const seatTextWidth = 160;
 
@@ -95,7 +96,7 @@ router.post("/generate-hallticket", async (req, res) => {
         lineBreak: false
       });
 
-    /* ========= TABLE ========= */
+    /* ===== TABLE ===== */
     const tableY = lineY + 30;
     const rowHeight = 34;
 
@@ -122,27 +123,17 @@ router.post("/generate-hallticket", async (req, res) => {
         .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
     });
 
-    /* ========= STAMPS BELOW TABLE ========= */
+    /* ===== STAMPS ===== */
     const stampY = tableY + rowHeight * rows.length + 30;
     const stampWidth = 90;
 
-    // LEFT STAMP (dummy image path)
-    doc.image(
-      path.join(__dirname, "../stamps/stampSign.png"),
-      tableX,
-      stampY,
-      { width: stampWidth }
-    );
+    // LEFT STAMP (replace path with your own)
+    doc.image(path.join(__dirname, "../stamps/stamp_left.png"), tableX, stampY, { width: stampWidth });
 
-    // RIGHT STAMP (dummy image path)
-    doc.image(
-      path.join(__dirname, "../stamps/stamp1.png"),
-      tableX + tableWidth - stampWidth,
-      stampY,
-      { width: stampWidth }
-    );
+    // RIGHT STAMP (replace path with your own)
+    doc.image(path.join(__dirname, "../stamps/stamp_right.png"), tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
 
-    /* ========= FOOTER ========= */
+    /* ===== FOOTER ===== */
     doc.fontSize(10)
       .text(
         "Note: This hall ticket must be carried to the examination hall.",
@@ -151,11 +142,14 @@ router.post("/generate-hallticket", async (req, res) => {
         { width: pageWidth, align: "center" }
       );
 
+    /* ===== END PDF & SEND RESPONSE ===== */
     doc.end();
 
-    res.json({
-      success: true,
-      pdfUrl: `/halltickets/${fileName}`,
+    stream.on("finish", () => {
+      res.json({
+        success: true,
+        pdfUrl: `/halltickets/${fileName}`,
+      });
     });
 
   } catch (err) {
