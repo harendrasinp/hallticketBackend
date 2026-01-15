@@ -93,6 +93,7 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold")
       .fontSize(18)
       .text("HALL TICKET", 0, 130, {
+        width: pageWidth,   // 🔥 IMPORTANT
         align: "center",
         underline: true,
       });
@@ -124,14 +125,14 @@ router.post("/generate-hallticket", async (req, res) => {
       // Horizontal lines
       if (i > 0) {
         doc.moveTo(tableX, y)
-           .lineTo(tableX + tableWidth, y)
-           .stroke();
+          .lineTo(tableX + tableWidth, y)
+          .stroke();
       }
 
       // Vertical divider
       doc.moveTo(tableX + col1Width, y)
-         .lineTo(tableX + col1Width, y + rowHeight)
-         .stroke();
+        .lineTo(tableX + col1Width, y + rowHeight)
+        .stroke();
 
       // Label
       doc.font("Helvetica-Bold")
@@ -156,9 +157,11 @@ router.post("/generate-hallticket", async (req, res) => {
         "Note: This hall ticket must be carried to the examination hall.",
         0,
         740,
-        { align: "center" }
+        {
+          width: pageWidth,   // 🔥 IMPORTANT
+          align: "center",
+        }
       );
-
     doc.end();
 
     res.json({
