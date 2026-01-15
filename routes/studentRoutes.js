@@ -67,22 +67,27 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ========= TABLE WIDTH (used for alignment) ========= */
+    /* ========= TABLE SIZE (FOR ALIGNMENT) ========= */
     const col1Width = 180;
     const col2Width = 280;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
 
-    /* ========= STUDENT NAME + SEAT NO ========= */
+    /* ========= NAME LEFT & SEAT NO RIGHT ========= */
     const lineY = 200;
-    const leftX = tableX +5;                // ✔ perfectly aligned with table
-    const rightX = tableX + tableWidth - 150; // ✔ right side balanced
+    const seatTextWidth = 160;
 
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Name: ${student.fullName}`, leftX, lineY);
+      .text(`Name: ${student.fullName}`, tableX, lineY, {
+        width: col1Width,
+        align: "left"
+      });
 
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Seat No.: ${student.rollNumber}`, rightX, lineY);
+      .text(`Seat No.: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
+        width: seatTextWidth,
+        align: "right"
+      });
 
     /* ========= TABLE ========= */
     const tableY = lineY + 30;
