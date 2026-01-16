@@ -13,7 +13,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const inputName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
-    /* ===== FIND ONLY BY MOBILE ===== */
+    /* ===== FIND STUDENT ONLY BY MOBILE ===== */
     const student = await Student.findOne({ mobile });
     if (!student) {
       return res.status(404).json({ message: "Mobile number not found" });
@@ -73,49 +73,39 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ===== NAME & SEAT (AUTO FONT FIT – NO DOTS) ===== */
+    /* ===== NAME & SEAT NO (SAME AUTO FONT SIZE) ===== */
     const col1Width = 260;
     const col2Width = 200;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
     const lineY = 200;
 
-    /* 🔥 AUTO FONT SIZE FOR NAME */
     let nameFontSize = 14;
     doc.font("Helvetica-Bold");
 
     while (
-      doc.widthOfString(`NAME: ${inputName}`, { size: nameFontSize }) > col1Width
-      && nameFontSize > 9
+      doc.widthOfString(`NAME: ${inputName}`, { size: nameFontSize }) > col1Width &&
+      nameFontSize > 9
     ) {
       nameFontSize--;
     }
 
+    /* NAME */
     doc.fontSize(nameFontSize)
       .text(`NAME: ${inputName}`, tableX, lineY, {
         width: col1Width,
         lineBreak: false
       });
 
-    /* 🔥 AUTO FONT SIZE FOR SEAT NO */
-    let seatFontSize = 14;
-    doc.font("Helvetica-Bold");
-
-    while (
-      doc.widthOfString(`SEAT NO: ${student.rollNumber}`, { size: seatFontSize }) > col2Width
-      && seatFontSize > 10
-    ) {
-      seatFontSize--;
-    }
-
-    doc.fontSize(seatFontSize)
+    /* SEAT NO (SAME FONT SIZE AS NAME) */
+    doc.fontSize(nameFontSize)
       .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
         width: col2Width,
         align: "right",
         lineBreak: false
       });
 
-    /* ===== TABLE ===== */
+    /* ===== DETAILS TABLE ===== */
     const tableY = lineY + 30;
     const rowHeight = 34;
 
