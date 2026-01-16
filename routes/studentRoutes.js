@@ -73,25 +73,28 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ===== NAME & SEAT ===== */
-    const col1Width = 180;
-    const col2Width = 280;
+    /* ===== NAME & SEAT (FIXED SINGLE LINE) ===== */
+    const col1Width = 260; // name ko zyada space
+    const col2Width = 200;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
     const lineY = 200;
-    const seatTextWidth = 160;
 
-    /* 👉 NAME FROM USER INPUT */
+    /* 👉 NAME (ALWAYS ONE LINE) */
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Name: ${inputName}`, tableX, lineY, {
-        width: tableWidth / 2,
-        align: "left"
+      .text(`NAME: ${inputName}`, tableX, lineY, {
+        width: col1Width,
+        height: 18,
+        lineBreak: false,
+        ellipsis: true
       });
 
+    /* 👉 SEAT NO */
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Seat No: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
-        width: seatTextWidth,
-        align: "right"
+      .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
+        width: col2Width,
+        align: "right",
+        lineBreak: false
       });
 
     /* ===== TABLE ===== */
