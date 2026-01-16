@@ -3,18 +3,20 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 
-const studentRoutes = require("./routes/studentRoutes");
+const studentRoutes = require("./routes/studentRoutes"); // hallticket route
 
 const app = express();
 
 /* ===== MIDDLEWARE ===== */
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); // important for mobile/form-data
 
-/* ===== MONGODB ===== */
-mongoose
-  .connect(process.env.MONGO_URI)
+/* ===== STATIC PDF FOLDER ===== */
+app.use("/halltickets", express.static(path.join(__dirname, "halltickets")));
+
+/* ===== MONGODB CONNECT ===== */
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 
