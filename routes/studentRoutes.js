@@ -10,12 +10,13 @@ router.post("/generate-hallticket", async (req, res) => {
     let { fullName, mobile } = req.body;
 
     /* ===== CLEAN INPUT ===== */
-    fullName = fullName.trim().replace(/\s+/g, " ");
+    const inputName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
-    const student = await Student.findOne({ fullName, mobile });
+    /* ===== FIND ONLY BY MOBILE ===== */
+    const student = await Student.findOne({ mobile });
     if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+      return res.status(404).json({ message: "Mobile number not found" });
     }
 
     /* ===== FOLDER ===== */
@@ -27,8 +28,6 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ===== PDF ===== */
     const doc = new PDFDocument({ size: "A4", margin: 40 });
-
-    // PDF Stream (mobile friendly)
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
 
@@ -82,18 +81,17 @@ router.post("/generate-hallticket", async (req, res) => {
     const lineY = 200;
     const seatTextWidth = 160;
 
+    /* 👉 NAME FROM USER INPUT */
     doc.font("Helvetica-Bold").fontSize(14)
-      .text(`Name: ${student.fullName}`, tableX, lineY, {
+      .text(`Name: ${inputName}`, tableX, lineY, {
         width: tableWidth / 2,
-        align: "left",
-        lineBreak: false
+        align: "left"
       });
 
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Seat No: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
         width: seatTextWidth,
-        align: "right",
-        lineBreak: false
+        align: "right"
       });
 
     /* ===== TABLE ===== */
@@ -127,10 +125,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const stampY = tableY + rowHeight * rows.length + 30;
     const stampWidth = 90;
 
-    // LEFT STAMP (replace path with your own)
     doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, { width: stampWidth });
-
-    // RIGHT STAMP (replace path with your own)
     doc.image(path.join(__dirname, "../stamps/stamp1.png"), tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
 
     /* ===== FOOTER ===== */
@@ -142,7 +137,6 @@ router.post("/generate-hallticket", async (req, res) => {
         { width: pageWidth, align: "center" }
       );
 
-    /* ===== END PDF & SEND RESPONSE ===== */
     doc.end();
 
     stream.on("finish", () => {
