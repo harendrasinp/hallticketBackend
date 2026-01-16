@@ -74,7 +74,7 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ===== NAME & SEAT NO (SAME AUTO FONT SIZE) ===== */
+    /* ===== NAME & SEAT NO ===== */
     const col1Width = 260;
     const col2Width = 200;
     const tableWidth = col1Width + col2Width;
@@ -91,19 +91,13 @@ router.post("/generate-hallticket", async (req, res) => {
       nameFontSize--;
     }
 
-    /* NAME */
     doc.fontSize(nameFontSize)
-      .text(`NAME: ${inputName}`, tableX, lineY, {
-        width: col1Width,
-        lineBreak: false
-      });
+      .text(`NAME: ${inputName}`, tableX, lineY, { width: col1Width });
 
-    /* SEAT NO (SAME FONT SIZE AS NAME) */
     doc.fontSize(nameFontSize)
       .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
         width: col2Width,
-        align: "right",
-        lineBreak: false
+        align: "right"
       });
 
     /* ===== DETAILS TABLE ===== */
@@ -130,40 +124,53 @@ router.post("/generate-hallticket", async (req, res) => {
         .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
 
       doc.font("Helvetica").fontSize(12)
-        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
+        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, {
+          width: col2Width - 20
+        });
     });
 
+    /* ===== MOVE BELOW TABLE ===== */
+    doc.moveDown(2);
+
     /* ===== INSTRUCTIONS ===== */
-    let instructionY = tableY + rowHeight * rows.length + 90; // stamps ke niche thoda gap
+    doc.font("Helvetica-Bold")
+      .fontSize(12)
+      .text("IMPORTANT INSTRUCTIONS:", tableX, doc.y, { width: tableWidth });
 
-    doc.font("Helvetica-Bold").fontSize(12).text("IMPORTANT INSTRUCTIONS:", tableX, instructionY);
-
-    instructionY += 20;
-
+    doc.moveDown(0.5);
     doc.font("Helvetica").fontSize(10);
 
     hallTicketInstructions.forEach((inst, i) => {
-      doc.text(`${i + 1}. ${inst}`, tableX, instructionY, {
-        width: tableWidth,  // same as table width
+      doc.text(`${i + 1}. ${inst}`, {
+        width: tableWidth,
         lineGap: 3
       });
-      instructionY += 12; // next instruction thoda niche
     });
-    /* ===== STAMPS ===== */
-    const stampY = tableY + rowHeight * rows.length + 30;
+
+    /* ===== STAMPS BELOW INSTRUCTIONS ===== */
+    doc.moveDown(1.5);
+    const stampY = doc.y;
     const stampWidth = 90;
 
-    doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, { width: stampWidth });
-    doc.image(path.join(__dirname, "../stamps/stamp1.png"), tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
+    doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, {
+      width: stampWidth
+    });
 
-    /* ===== FOOTER ===== */
-    doc.fontSize(10)
-      .text(
-        "Note: This hall ticket must be carried to the examination hall.",
-        0,
-        740,
-        { width: pageWidth, align: "center" }
-      );
+    doc.image(
+      path.join(__dirname, "../stamps/stamp1.png"),
+      tableX + tableWidth - stampWidth,
+      stampY,
+      { width: stampWidth }
+    );
+
+    /* ===== FOOTER NOTE ===== */
+    doc.moveDown(6);
+    doc.fontSize(10).text(
+      "Note: This hall ticket must be carried to the examination hall.",
+      0,
+      doc.y,
+      { width: pageWidth, align: "center" }
+    );
 
     doc.end();
 
