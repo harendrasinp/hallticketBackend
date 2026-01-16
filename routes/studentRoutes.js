@@ -4,7 +4,7 @@ const Student = require("../models/Students");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-const hallTicketInstructions = require("../utils/hallTicketInstructions");
+const hallTicketInstructions = require("../utils/instructions");
 
 router.post("/generate-hallticket", async (req, res) => {
   try {
