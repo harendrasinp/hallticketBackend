@@ -1,5 +1,4 @@
 const hallTicketInstructions = [
- "IMPORTANT INSTRUCTIONS FOR CANDIDATES",
  "Candidates must bring this Hall Ticket to the examination hall. Entry will not be allowed without a valid Hall Ticket.",
 
  "Carry a valid Photo Identity Proof (School ID / Aadhaar Card) along with the Hall Ticket.",
