@@ -113,12 +113,14 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.end();
 
     /* ===== SEND RESPONSE AFTER FILE READY ===== */
-    stream.on("finish", () => {
-      res.json({
-        success: true,
-        pdfUrl: `${BASE_URL}/halltickets/${fileName}`,
-      });
-    });
+  stream.on("finish", () => {
+  const fullPdfUrl = `${req.protocol}://${req.get("host")}/halltickets/${fileName}`;
+
+  res.json({
+    success: true,
+    pdfUrl: fullPdfUrl
+  });
+});
 
   } catch (err) {
     console.error(err);
