@@ -4,6 +4,7 @@ const Student = require("../models/Students");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
+const hallTicketInstructions = require("../utils/hallTicketInstructions");
 
 router.post("/generate-hallticket", async (req, res) => {
   try {
@@ -132,6 +133,22 @@ router.post("/generate-hallticket", async (req, res) => {
         .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
     });
 
+    /* ===== INSTRUCTIONS ===== */
+    let instructionY = tableY + rowHeight * rows.length + 90; // stamps ke niche thoda gap
+
+    doc.font("Helvetica-Bold").fontSize(12).text("IMPORTANT INSTRUCTIONS:", tableX, instructionY);
+
+    instructionY += 20;
+
+    doc.font("Helvetica").fontSize(10);
+
+    hallTicketInstructions.forEach((inst, i) => {
+      doc.text(`${i + 1}. ${inst}`, tableX, instructionY, {
+        width: tableWidth,  // same as table width
+        lineGap: 3
+      });
+      instructionY += 12; // next instruction thoda niche
+    });
     /* ===== STAMPS ===== */
     const stampY = tableY + rowHeight * rows.length + 30;
     const stampWidth = 90;
