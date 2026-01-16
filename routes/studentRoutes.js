@@ -73,24 +73,42 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ===== NAME & SEAT (FIXED SINGLE LINE) ===== */
-    const col1Width = 260; // name ko zyada space
+    /* ===== NAME & SEAT (AUTO FONT FIT – NO DOTS) ===== */
+    const col1Width = 260;
     const col2Width = 200;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
     const lineY = 200;
 
-    /* 👉 NAME (ALWAYS ONE LINE) */
-    doc.font("Helvetica-Bold").fontSize(14)
+    /* 🔥 AUTO FONT SIZE FOR NAME */
+    let nameFontSize = 14;
+    doc.font("Helvetica-Bold");
+
+    while (
+      doc.widthOfString(`NAME: ${inputName}`, { size: nameFontSize }) > col1Width
+      && nameFontSize > 9
+    ) {
+      nameFontSize--;
+    }
+
+    doc.fontSize(nameFontSize)
       .text(`NAME: ${inputName}`, tableX, lineY, {
         width: col1Width,
-        height: 18,
-        lineBreak: false,
-        ellipsis: true
+        lineBreak: false
       });
 
-    /* 👉 SEAT NO */
-    doc.font("Helvetica-Bold").fontSize(14)
+    /* 🔥 AUTO FONT SIZE FOR SEAT NO */
+    let seatFontSize = 14;
+    doc.font("Helvetica-Bold");
+
+    while (
+      doc.widthOfString(`SEAT NO: ${student.rollNumber}`, { size: seatFontSize }) > col2Width
+      && seatFontSize > 10
+    ) {
+      seatFontSize--;
+    }
+
+    doc.fontSize(seatFontSize)
       .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
         width: col2Width,
         align: "right",
