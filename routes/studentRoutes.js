@@ -5,12 +5,6 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 
-/* ===== PRELOAD IMAGES (VERY IMPORTANT) ===== */
-const logo1 = fs.readFileSync(path.join(__dirname, "../logos/tapi.png"));
-const logo2 = fs.readFileSync(path.join(__dirname, "../logos/pplogo.png"));
-const stamp1 = fs.readFileSync(path.join(__dirname, "../stamps/stampSign.png"));
-const stamp2 = fs.readFileSync(path.join(__dirname, "../stamps/stamp1.png"));
-
 router.post("/generate-hallticket", async (req, res) => {
   try {
     let { fullName, mobile } = req.body;
@@ -24,21 +18,19 @@ router.post("/generate-hallticket", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    /* ===== RESPONSE HEADERS ===== */
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename=hallticket_${student.rollNumber}.pdf`
-    );
+    /* ===== FOLDER ===== */
+    const dir = path.join(__dirname, "../halltickets");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+
+    const fileName = `${mobile}_${Date.now()}.pdf`;
+    const filePath = path.join(dir, fileName);
 
     /* ===== PDF ===== */
-    const doc = new PDFDocument({
-      size: "A4",
-      margin: 40,
-      compress: true,
-    });
+    const doc = new PDFDocument({ size: "A4", margin: 40 });
 
-    doc.pipe(res);
+    // PDF Stream (mobile friendly)
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
 
     const pageWidth = doc.page.width;
     const centerX = pageWidth / 2;
@@ -55,9 +47,9 @@ router.post("/generate-hallticket", async (req, res) => {
     const headerX = centerX - headerWidth / 2;
     const headerY = 45;
 
-    doc.image(logo1, headerX, headerY, { width: logoSize });
+    doc.image(path.join(__dirname, "../logos/tapi.png"), headerX, headerY, { width: logoSize });
     doc.image(
-      logo2,
+      path.join(__dirname, "../logos/pplogo.png"),
       headerX + logoSize + gap + textWidth + gap,
       headerY,
       { width: logoSize }
@@ -79,7 +71,7 @@ router.post("/generate-hallticket", async (req, res) => {
       .text("HALL TICKET", 0, 130, {
         width: pageWidth,
         align: "center",
-        underline: true,
+        underline: true
       });
 
     /* ===== NAME & SEAT ===== */
@@ -93,14 +85,15 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Name: ${student.fullName}`, tableX, lineY, {
         width: tableWidth / 2,
-        lineBreak: false,
+        align: "left",
+        lineBreak: false
       });
 
     doc.font("Helvetica-Bold").fontSize(14)
       .text(`Seat No: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
         width: seatTextWidth,
         align: "right",
-        lineBreak: false,
+        lineBreak: false
       });
 
     /* ===== TABLE ===== */
@@ -127,17 +120,18 @@ router.post("/generate-hallticket", async (req, res) => {
         .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
 
       doc.font("Helvetica").fontSize(12)
-        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, {
-          width: col2Width - 20,
-        });
+        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
     });
 
     /* ===== STAMPS ===== */
     const stampY = tableY + rowHeight * rows.length + 30;
     const stampWidth = 90;
 
-    doc.image(stamp1, tableX, stampY, { width: stampWidth });
-    doc.image(stamp2, tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
+    // LEFT STAMP (replace path with your own)
+    doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, { width: stampWidth });
+
+    // RIGHT STAMP (replace path with your own)
+    doc.image(path.join(__dirname, "../stamps/stamp1.png"), tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
 
     /* ===== FOOTER ===== */
     doc.fontSize(10)
@@ -148,8 +142,16 @@ router.post("/generate-hallticket", async (req, res) => {
         { width: pageWidth, align: "center" }
       );
 
-    /* ===== END ===== */
+    /* ===== END PDF & SEND RESPONSE ===== */
     doc.end();
+
+    stream.on("finish", () => {
+      res.json({
+        success: true,
+        pdfUrl: `/halltickets/${fileName}`,
+      });
+    });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
