@@ -5,16 +5,11 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 
-/* ===== PRELOAD IMAGES (ONCE) ===== */
-const logo1 = fs.readFileSync(path.join(__dirname, "../logos/tapi.png"));
-const logo2 = fs.readFileSync(path.join(__dirname, "../logos/pplogo.png"));
-const stamp1 = fs.readFileSync(path.join(__dirname, "../stamps/stampSign.png"));
-const stamp2 = fs.readFileSync(path.join(__dirname, "../stamps/stamp1.png"));
-
 router.post("/generate-hallticket", async (req, res) => {
   try {
     let { fullName, mobile } = req.body;
 
+    /* ===== CLEAN INPUT ===== */
     fullName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
@@ -23,26 +18,27 @@ router.post("/generate-hallticket", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    /* ===== RESPONSE HEADERS ===== */
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename=hallticket_${student.rollNumber}.pdf`
-    );
+    /* ===== FOLDER ===== */
+    const dir = path.join(__dirname, "../halltickets");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+
+    const fileName = `${mobile}_${Date.now()}.pdf`;
+    const filePath = path.join(dir, fileName);
 
     /* ===== PDF ===== */
-    const doc = new PDFDocument({
-      size: "A4",
-      margin: 40,
-      compress: true,
-    });
+    const doc = new PDFDocument({ size: "A4", margin: 40 });
 
-    doc.pipe(res);
+    // PDF Stream (mobile friendly)
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
 
     const pageWidth = doc.page.width;
     const centerX = pageWidth / 2;
 
+    /* ===== BORDER ===== */
     doc.rect(20, 20, 555, 802).stroke();
+
+    /* ===== HEADER ===== */
     const logoSize = 65;
     const textWidth = 360;
     const gap = 20;
@@ -51,8 +47,13 @@ router.post("/generate-hallticket", async (req, res) => {
     const headerX = centerX - headerWidth / 2;
     const headerY = 45;
 
-    doc.image(logo1, headerX, headerY, { width: logoSize });
-    doc.image(logo2, headerX + logoSize + gap + textWidth + gap, headerY, { width: logoSize });
+    doc.image(path.join(__dirname, "../logos/tapi.png"), headerX, headerY, { width: logoSize });
+    doc.image(
+      path.join(__dirname, "../logos/pplogo.png"),
+      headerX + logoSize + gap + textWidth + gap,
+      headerY,
+      { width: logoSize }
+    );
 
     const textX = headerX + logoSize + gap;
 
@@ -62,15 +63,94 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(15)
       .text("P.P SAVANI VIDHYAMANDIR", textX, headerY + 26, { width: textWidth, align: "center" });
 
-    doc.fontSize(18).text("HALL TICKET", 0, 130, { width: pageWidth, align: "center" });
+    doc.font("Helvetica").fontSize(10)
+      .text("AT POST KATHGADH VYARA, DIST. TAPI", textX, headerY + 46, { width: textWidth, align: "center" });
 
-    doc.fontSize(14).text(`Name: ${student.fullName}`, 80, 200);
-    doc.fontSize(14).text(`Seat No: ${student.rollNumber}`, 350, 200);
+    /* ===== TITLE ===== */
+    doc.font("Helvetica-Bold").fontSize(18)
+      .text("HALL TICKET", 0, 130, {
+        width: pageWidth,
+        align: "center",
+        underline: true
+      });
 
-    doc.image(stamp1, 80, 500, { width: 90 });
-    doc.image(stamp2, 380, 500, { width: 90 });
+    /* ===== NAME & SEAT ===== */
+    const col1Width = 180;
+    const col2Width = 280;
+    const tableWidth = col1Width + col2Width;
+    const tableX = centerX - tableWidth / 2;
+    const lineY = 200;
+    const seatTextWidth = 160;
 
+    doc.font("Helvetica-Bold").fontSize(14)
+      .text(`Name: ${student.fullName}`, tableX, lineY, {
+        width: tableWidth / 2,
+        align: "left",
+        lineBreak: false
+      });
+
+    doc.font("Helvetica-Bold").fontSize(14)
+      .text(`Seat No: ${student.rollNumber}`, tableX + tableWidth - seatTextWidth, lineY, {
+        width: seatTextWidth,
+        align: "right",
+        lineBreak: false
+      });
+
+    /* ===== TABLE ===== */
+    const tableY = lineY + 30;
+    const rowHeight = 34;
+
+    const rows = [
+      ["Std", student.std],
+      ["Medium", student.medium],
+      ["Center", student.center],
+      ["Exam Name", student.examName],
+      ["Exam Date", student.examDate],
+    ];
+
+    doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
+
+    rows.forEach((row, i) => {
+      const y = tableY + i * rowHeight;
+
+      if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
+      doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
+
+      doc.font("Helvetica-Bold").fontSize(12)
+        .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
+
+      doc.font("Helvetica").fontSize(12)
+        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, { width: col2Width - 20 });
+    });
+
+    /* ===== STAMPS ===== */
+    const stampY = tableY + rowHeight * rows.length + 30;
+    const stampWidth = 90;
+
+    // LEFT STAMP (replace path with your own)
+    doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, { width: stampWidth });
+
+    // RIGHT STAMP (replace path with your own)
+    doc.image(path.join(__dirname, "../stamps/stamp1.png"), tableX + tableWidth - stampWidth, stampY, { width: stampWidth });
+
+    /* ===== FOOTER ===== */
+    doc.fontSize(10)
+      .text(
+        "Note: This hall ticket must be carried to the examination hall.",
+        0,
+        740,
+        { width: pageWidth, align: "center" }
+      );
+
+    /* ===== END PDF & SEND RESPONSE ===== */
     doc.end();
+
+    stream.on("finish", () => {
+      res.json({
+        success: true,
+        pdfUrl: `/halltickets/${fileName}`,
+      });
+    });
 
   } catch (err) {
     console.error(err);
