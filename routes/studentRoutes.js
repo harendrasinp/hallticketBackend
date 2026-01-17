@@ -6,7 +6,13 @@ const fs = require("fs");
 const path = require("path");
 const hallTicketInstructions = require("../utils/instructions");
 
-/* ===== NAME NORMALIZER FUNCTION ===== */
+/* ===== PRELOAD IMAGES (VERY IMPORTANT FOR SPEED) ===== */
+const tapiLogo = fs.readFileSync(path.join(__dirname, "../logos/tapi.png"));
+const ppLogo = fs.readFileSync(path.join(__dirname, "../logos/pplogo.png"));
+const stampSign = fs.readFileSync(path.join(__dirname, "../stamps/stampSign.png"));
+const stamp1 = fs.readFileSync(path.join(__dirname, "../stamps/stamp1.png"));
+
+/* ===== NAME NORMALIZER ===== */
 function normalizeName(name) {
   return name
     .toLowerCase()
@@ -25,38 +31,28 @@ router.post("/generate-hallticket", async (req, res) => {
       return res.status(400).json({ message: "Full name and mobile are required" });
     }
 
-    /* ===== CLEAN INPUT ===== */
     const inputName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
-    const normalizedInputName = normalizeName(inputName);
-
-    /* ===== FIND STUDENT BY MOBILE ===== */
-    const student = await Student.findOne({ mobile });
+    const student = await Student.findOne({ mobile }).lean(); // ⚡ faster
     if (!student) {
       return res.status(404).json({ message: "Mobile number not found" });
     }
 
-    /* ===== MATCH NAME ===== */
-    const normalizedDbName = normalizeName(student.fullName);
-
-    if (normalizedInputName !== normalizedDbName) {
-      return res.status(400).json({
-        message: "Full name does not match with mobile number"
-      });
+    if (normalizeName(inputName) !== normalizeName(student.fullName)) {
+      return res.status(400).json({ message: "Name & mobile do not match" });
     }
 
-    /* ===== FOLDER ===== */
-    const dir = path.join(__dirname, "../halltickets");
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    /* ===== RESPONSE HEADERS (MOBILE FRIENDLY) ===== */
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename=HallTicket_${mobile}.pdf`
+    );
 
-    const fileName = `${mobile}_${Date.now()}.pdf`;
-    const filePath = path.join(dir, fileName);
-
-    /* ===== PDF ===== */
+    /* ===== PDF STREAM DIRECT TO CLIENT ===== */
     const doc = new PDFDocument({ size: "A4", margin: 40 });
-    const stream = fs.createWriteStream(filePath);
-    doc.pipe(stream);
+    doc.pipe(res);
 
     const pageWidth = doc.page.width;
     const centerX = pageWidth / 2;
@@ -65,7 +61,7 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.rect(20, 20, 555, 802).stroke();
 
     /* ===== HEADER ===== */
-    const logoSize = 65;
+    const logoSize = 60;
     const textWidth = 360;
     const gap = 20;
 
@@ -73,24 +69,30 @@ router.post("/generate-hallticket", async (req, res) => {
     const headerX = centerX - headerWidth / 2;
     const headerY = 45;
 
-    doc.image(path.join(__dirname, "../logos/tapi.png"), headerX, headerY, { width: logoSize });
-    doc.image(
-      path.join(__dirname, "../logos/pplogo.png"),
-      headerX + logoSize + gap + textWidth + gap,
-      headerY,
-      { width: logoSize }
-    );
+    doc.image(tapiLogo, headerX, headerY, { width: logoSize });
+    doc.image(ppLogo, headerX + logoSize + gap + textWidth + gap, headerY, {
+      width: logoSize
+    });
 
     const textX = headerX + logoSize + gap;
 
     doc.font("Helvetica-Bold").fontSize(20)
-      .text("TAPI EDUCATION ACADEMY", textX, headerY, { width: textWidth, align: "center" });
+      .text("TAPI EDUCATION ACADEMY", textX, headerY, {
+        width: textWidth,
+        align: "center"
+      });
 
     doc.font("Helvetica-Bold").fontSize(15)
-      .text("P.P SAVANI VIDHYAMANDIR", textX, headerY + 26, { width: textWidth, align: "center" });
+      .text("P.P SAVANI VIDHYAMANDIR", textX, headerY + 26, {
+        width: textWidth,
+        align: "center"
+      });
 
     doc.font("Helvetica").fontSize(10)
-      .text("AT POST KATHGADH VYARA, DIST. TAPI", textX, headerY + 46, { width: textWidth, align: "center" });
+      .text("AT POST KATHGADH VYARA, DIST. TAPI", textX, headerY + 46, {
+        width: textWidth,
+        align: "center"
+      });
 
     /* ===== TITLE ===== */
     doc.font("Helvetica-Bold").fontSize(18)
@@ -100,35 +102,26 @@ router.post("/generate-hallticket", async (req, res) => {
         underline: true
       });
 
-    /* ===== NAME & SEAT NO ===== */
+    /* ===== NAME & SEAT ===== */
     const col1Width = 260;
     const col2Width = 200;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
     const lineY = 200;
 
-    let nameFontSize = 14;
-    doc.font("Helvetica-Bold");
-
-    while (
-      doc.widthOfString(`NAME: ${student.fullName}`, { size: nameFontSize }) > col1Width &&
-      nameFontSize > 9
-    ) {
-      nameFontSize--;
-    }
-
-    doc.fontSize(nameFontSize)
-      .text(`NAME: ${student.fullName}`, tableX, lineY, { width: col1Width });
-
-    doc.fontSize(nameFontSize)
-      .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
-        width: col2Width,
-        align: "right"
+    doc.fontSize(13).font("Helvetica-Bold")
+      .text(`NAME: ${student.fullName}`, tableX, lineY, {
+        width: col1Width
       });
 
-    /* ===== DETAILS TABLE ===== */
+    doc.text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
+      width: col2Width,
+      align: "right"
+    });
+
+    /* ===== DETAILS ===== */
     const tableY = lineY + 30;
-    const rowHeight = 34;
+    const rowHeight = 32;
 
     const rows = [
       ["Std", student.std],
@@ -142,67 +135,41 @@ router.post("/generate-hallticket", async (req, res) => {
 
     rows.forEach((row, i) => {
       const y = tableY + i * rowHeight;
-
       if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
       doc.font("Helvetica-Bold").fontSize(12)
-        .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
+        .text(row[0], tableX + 10, y + 9);
 
       doc.font("Helvetica").fontSize(12)
-        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, {
-          width: col2Width - 20
-        });
+        .text(row[1] ?? "-", tableX + col1Width + 10, y + 9);
     });
 
     /* ===== INSTRUCTIONS ===== */
     doc.moveDown(2);
     doc.font("Helvetica-Bold").fontSize(12)
-      .text("IMPORTANT INSTRUCTIONS:", tableX, doc.y, { width: tableWidth });
+      .text("IMPORTANT INSTRUCTIONS:", tableX);
 
-    doc.moveDown(0.5);
     doc.font("Helvetica").fontSize(10);
-
     hallTicketInstructions.forEach((inst, i) => {
-      doc.text(`${i + 1}. ${inst}`, {
-        width: tableWidth,
-        lineGap: 3
-      });
+      doc.text(`${i + 1}. ${inst}`, { width: tableWidth });
     });
 
     /* ===== STAMPS ===== */
     doc.moveDown(1.5);
     const stampY = doc.y;
-    const stampWidth = 90;
 
-    doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, {
-      width: stampWidth
-    });
-
-    doc.image(
-      path.join(__dirname, "../stamps/stamp1.png"),
-      tableX + tableWidth - stampWidth,
-      stampY,
-      { width: stampWidth }
-    );
+    doc.image(stampSign, tableX, stampY, { width: 90 });
+    doc.image(stamp1, tableX + tableWidth - 90, stampY, { width: 90 });
 
     /* ===== FOOTER ===== */
-    doc.moveDown(6);
-    doc.fontSize(10).text(
-      "Note: This hall ticket must be carried to the examination hall.",
-      0,
-      doc.y,
-      { width: pageWidth, align: "center" }
-    );
+    doc.moveDown(5);
+    doc.fontSize(10)
+      .text("Note: This hall ticket must be carried to the examination hall.", {
+        align: "center"
+      });
 
     doc.end();
-
-    stream.on("finish", () => {
-      res.json({
-        success: true,
-        pdfUrl: `/halltickets/${fileName}`,
-      });
-    });
 
   } catch (err) {
     console.error(err);
