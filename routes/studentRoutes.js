@@ -136,6 +136,7 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Center", student.center],
       ["Exam Name", student.examName],
       ["Exam Date", student.examDate],
+      ["Phone", student.mobile],
     ];
 
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
