@@ -106,7 +106,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const tableX = centerX - tableWidth / 2;
     const lineY = 200;
 
-    let nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width, 14, 9);
+    const nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width, 14, 9);
     doc.font("Helvetica-Bold").fontSize(nameFontSize)
       .text(`NAME: ${student.fullName}`, tableX, lineY, { width: col1Width });
 
@@ -130,16 +130,32 @@ router.post("/generate-hallticket", async (req, res) => {
 
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
+    /* ===== SAME FONT SIZE FOR CENTER & EXAM NAME ===== */
+    const commonCenterExamFontSize = fitText(
+      doc,
+      `${student.center} ${student.examName}`,
+      col2Width - 20,
+      12,
+      8
+    );
+
     rows.forEach((row, i) => {
       const y = tableY + i * rowHeight;
 
       if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
+      // LABEL
       doc.font("Helvetica-Bold").fontSize(12)
         .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
 
-      const valueFontSize = fitText(doc, row[1], col2Width - 20, 12, 8);
+      // VALUE
+      let valueFontSize = 12;
+      if (row[0] === "Center" || row[0] === "Exam Name") {
+        valueFontSize = commonCenterExamFontSize;
+      } else {
+        valueFontSize = fitText(doc, row[1], col2Width - 20, 12, 8);
+      }
 
       doc.font("Helvetica").fontSize(valueFontSize)
         .text(String(row[1] ?? "-"),
