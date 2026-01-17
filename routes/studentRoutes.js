@@ -175,12 +175,12 @@ router.post("/generate-hallticket", async (req, res) => {
     const stampY = doc.y;
     const stampWidth = 90;
 
-    doc.image(path.join(__dirname, "../stamps/stampSign.png"), tableX, stampY, {
+    doc.image(path.join(__dirname, "../stamps/stampSign.jpeg"), tableX, stampY, {
       width: stampWidth
     });
 
     doc.image(
-      path.join(__dirname, "../stamps/stamp1.png"),
+      path.join(__dirname, "../stamps/stamp1.jpeg"),
       tableX + tableWidth - stampWidth,
       stampY,
       { width: stampWidth }
