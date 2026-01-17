@@ -55,8 +55,21 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ===== PDF ===== */
     const doc = new PDFDocument({ size: "A4", margin: 40 });
-    const stream = fs.createWriteStream(filePath);
-    doc.pipe(stream);
+    const buffers = [];
+    doc.on("data", buffers.push.bind(buffers));
+    doc.on("end", () => {
+      const pdfData = Buffer.concat(buffers);
+
+      const fileName = `${mobile}.pdf`;
+      const filePath = path.join(__dirname, "../halltickets", fileName);
+
+      fs.writeFileSync(filePath, pdfData);
+
+      res.json({
+        success: true,
+        pdfUrl: `/halltickets/${fileName}`,
+      });
+    });
 
     const pageWidth = doc.page.width;
     const centerX = pageWidth / 2;
