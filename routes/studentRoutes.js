@@ -17,6 +17,17 @@ function normalizeName(name) {
     .join(" ");
 }
 
+/* ===== AUTO FONT SIZE FIT FUNCTION ===== */
+function fitText(doc, text, maxWidth, startSize = 12, minSize = 8) {
+  let size = startSize;
+  doc.fontSize(size);
+  while (doc.widthOfString(String(text)) > maxWidth && size > minSize) {
+    size--;
+    doc.fontSize(size);
+  }
+  return size;
+}
+
 router.post("/generate-hallticket", async (req, res) => {
   try {
     let { fullName, mobile } = req.body;
@@ -25,22 +36,15 @@ router.post("/generate-hallticket", async (req, res) => {
       return res.status(400).json({ message: "Full name and mobile are required" });
     }
 
-    /* ===== CLEAN INPUT ===== */
     const inputName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
-    const normalizedInputName = normalizeName(inputName);
-
-    /* ===== FIND STUDENT BY MOBILE ===== */
     const student = await Student.findOne({ mobile });
     if (!student) {
       return res.status(404).json({ message: "Mobile number not found" });
     }
 
-    /* ===== MATCH NAME ===== */
-    const normalizedDbName = normalizeName(student.fullName);
-
-    if (normalizedInputName !== normalizedDbName) {
+    if (normalizeName(inputName) !== normalizeName(student.fullName)) {
       return res.status(400).json({
         message: "Full name does not match with mobile number"
       });
@@ -68,7 +72,6 @@ router.post("/generate-hallticket", async (req, res) => {
     const logoSize = 65;
     const textWidth = 360;
     const gap = 20;
-
     const headerWidth = logoSize + gap + textWidth + gap + logoSize;
     const headerX = centerX - headerWidth / 2;
     const headerY = 45;
@@ -94,11 +97,7 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ===== TITLE ===== */
     doc.font("Helvetica-Bold").fontSize(18)
-      .text("HALL TICKET", 0, 130, {
-        width: pageWidth,
-        align: "center",
-        underline: true
-      });
+      .text("HALL TICKET", 0, 130, { width: pageWidth, align: "center", underline: true });
 
     /* ===== NAME & SEAT NO ===== */
     const col1Width = 260;
@@ -107,24 +106,14 @@ router.post("/generate-hallticket", async (req, res) => {
     const tableX = centerX - tableWidth / 2;
     const lineY = 200;
 
-    let nameFontSize = 14;
-    doc.font("Helvetica-Bold");
-
-    while (
-      doc.widthOfString(`NAME: ${student.fullName}`, { size: nameFontSize }) > col1Width &&
-      nameFontSize > 9
-    ) {
-      nameFontSize--;
-    }
-
-    doc.fontSize(nameFontSize)
+    let nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width, 14, 9);
+    doc.font("Helvetica-Bold").fontSize(nameFontSize)
       .text(`NAME: ${student.fullName}`, tableX, lineY, { width: col1Width });
 
-    doc.fontSize(nameFontSize)
-      .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
-        width: col2Width,
-        align: "right"
-      });
+    doc.text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
+      width: col2Width,
+      align: "right"
+    });
 
     /* ===== DETAILS TABLE ===== */
     const tableY = lineY + 30;
@@ -150,10 +139,18 @@ router.post("/generate-hallticket", async (req, res) => {
       doc.font("Helvetica-Bold").fontSize(12)
         .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
 
-      doc.font("Helvetica").fontSize(12)
-        .text(String(row[1] ?? "-"), tableX + col1Width + 10, y + 10, {
-          width: col2Width - 20
-        });
+      const valueFontSize = fitText(doc, row[1], col2Width - 20, 12, 8);
+
+      doc.font("Helvetica").fontSize(valueFontSize)
+        .text(String(row[1] ?? "-"),
+          tableX + col1Width + 10,
+          y + 10,
+          {
+            width: col2Width - 20,
+            lineBreak: false,
+            ellipsis: true
+          }
+        );
     });
 
     /* ===== INSTRUCTIONS ===== */
@@ -163,12 +160,8 @@ router.post("/generate-hallticket", async (req, res) => {
 
     doc.moveDown(0.5);
     doc.font("Helvetica").fontSize(10);
-
     hallTicketInstructions.forEach((inst, i) => {
-      doc.text(`${i + 1}. ${inst}`, {
-        width: tableWidth,
-        lineGap: 3
-      });
+      doc.text(`${i + 1}. ${inst}`, { width: tableWidth, lineGap: 3 });
     });
 
     /* ===== STAMPS ===== */
@@ -176,10 +169,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const stampY = doc.y;
     const stampWidth = 90;
 
-    doc.image(path.join(__dirname, "../stamps/stampSig.jpeg"), tableX, stampY, {
-      width: stampWidth
-    });
-
+    doc.image(path.join(__dirname, "../stamps/stampSig.jpeg"), tableX, stampY, { width: stampWidth });
     doc.image(
       path.join(__dirname, "../stamps/stamp.jpeg"),
       tableX + tableWidth - stampWidth,
