@@ -110,10 +110,11 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(nameFontSize)
       .text(`NAME: ${student.fullName}`, tableX, lineY, { width: col1Width });
 
-    doc.text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
-      width: col2Width,
-      align: "right"
-    });
+    doc.font("Helvetica-Bold").fontSize(12)
+      .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
+        width: col2Width,
+        align: "right"
+      });
 
     /* ===== DETAILS TABLE ===== */
     const tableY = lineY + 30;
@@ -132,16 +133,24 @@ router.post("/generate-hallticket", async (req, res) => {
 
     rows.forEach((row, i) => {
       const y = tableY + i * rowHeight;
+      const label = row[0];
+      const value = String(row[1] ?? "-");
 
       if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
+      // LABEL
       doc.font("Helvetica-Bold").fontSize(12)
-        .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
+        .text(label, tableX + 10, y + 10, { width: col1Width - 20 });
 
-      // 🔒 FIXED FONT SIZE (NO AUTO)
-      doc.font("Helvetica").fontSize(12)
-        .text(String(row[1] ?? "-"),
+      // VALUE FONT SIZE LOGIC
+      let valueFontSize = 12;
+      if (label === "Center" || label === "Exam Name") {
+        valueFontSize = 11; // 👈 ONE SIZE SMALLER
+      }
+
+      doc.font("Helvetica").fontSize(valueFontSize)
+        .text(value,
           tableX + col1Width + 10,
           y + 10,
           {
