@@ -6,18 +6,44 @@ const fs = require("fs");
 const path = require("path");
 const hallTicketInstructions = require("../utils/instructions");
 
+/* ===== NAME NORMALIZER FUNCTION ===== */
+function normalizeName(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .sort()
+    .join(" ");
+}
+
 router.post("/generate-hallticket", async (req, res) => {
   try {
     let { fullName, mobile } = req.body;
+
+    if (!fullName || !mobile) {
+      return res.status(400).json({ message: "Full name and mobile are required" });
+    }
 
     /* ===== CLEAN INPUT ===== */
     const inputName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
-    /* ===== FIND STUDENT ONLY BY MOBILE ===== */
+    const normalizedInputName = normalizeName(inputName);
+
+    /* ===== FIND STUDENT BY MOBILE ===== */
     const student = await Student.findOne({ mobile });
     if (!student) {
       return res.status(404).json({ message: "Mobile number not found" });
+    }
+
+    /* ===== MATCH NAME ===== */
+    const normalizedDbName = normalizeName(student.fullName);
+
+    if (normalizedInputName !== normalizedDbName) {
+      return res.status(400).json({
+        message: "Full name does not match with mobile number"
+      });
     }
 
     /* ===== FOLDER ===== */
@@ -85,14 +111,14 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold");
 
     while (
-      doc.widthOfString(`NAME: ${inputName}`, { size: nameFontSize }) > col1Width &&
+      doc.widthOfString(`NAME: ${student.fullName}`, { size: nameFontSize }) > col1Width &&
       nameFontSize > 9
     ) {
       nameFontSize--;
     }
 
     doc.fontSize(nameFontSize)
-      .text(`NAME: ${inputName}`, tableX, lineY, { width: col1Width });
+      .text(`NAME: ${student.fullName}`, tableX, lineY, { width: col1Width });
 
     doc.fontSize(nameFontSize)
       .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
@@ -129,12 +155,9 @@ router.post("/generate-hallticket", async (req, res) => {
         });
     });
 
-    /* ===== MOVE BELOW TABLE ===== */
-    doc.moveDown(2);
-
     /* ===== INSTRUCTIONS ===== */
-    doc.font("Helvetica-Bold")
-      .fontSize(12)
+    doc.moveDown(2);
+    doc.font("Helvetica-Bold").fontSize(12)
       .text("IMPORTANT INSTRUCTIONS:", tableX, doc.y, { width: tableWidth });
 
     doc.moveDown(0.5);
@@ -147,7 +170,7 @@ router.post("/generate-hallticket", async (req, res) => {
       });
     });
 
-    /* ===== STAMPS BELOW INSTRUCTIONS ===== */
+    /* ===== STAMPS ===== */
     doc.moveDown(1.5);
     const stampY = doc.y;
     const stampWidth = 90;
@@ -163,7 +186,7 @@ router.post("/generate-hallticket", async (req, res) => {
       { width: stampWidth }
     );
 
-    /* ===== FOOTER NOTE ===== */
+    /* ===== FOOTER ===== */
     doc.moveDown(6);
     doc.fontSize(10).text(
       "Note: This hall ticket must be carried to the examination hall.",
