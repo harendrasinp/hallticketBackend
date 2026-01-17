@@ -17,8 +17,8 @@ function normalizeName(name) {
     .join(" ");
 }
 
-/* ===== AUTO FONT SIZE FIT FUNCTION ===== */
-function fitText(doc, text, maxWidth, startSize = 12, minSize = 8) {
+/* ===== AUTO FIT ONLY FOR NAME ===== */
+function fitText(doc, text, maxWidth, startSize = 14, minSize = 9) {
   let size = startSize;
   doc.fontSize(size);
   while (doc.widthOfString(String(text)) > maxWidth && size > minSize) {
@@ -106,7 +106,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const tableX = centerX - tableWidth / 2;
     const lineY = 200;
 
-    const nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width, 14, 9);
+    const nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width);
     doc.font("Helvetica-Bold").fontSize(nameFontSize)
       .text(`NAME: ${student.fullName}`, tableX, lineY, { width: col1Width });
 
@@ -130,34 +130,17 @@ router.post("/generate-hallticket", async (req, res) => {
 
     doc.rect(tableX, tableY, tableWidth, rowHeight * rows.length).stroke();
 
-    /* ===== SAME FONT SIZE FOR CENTER & EXAM NAME ===== */
-    const commonCenterExamFontSize = fitText(
-      doc,
-      `${student.center} ${student.examName}`,
-      col2Width - 20,
-      12,
-      8
-    );
-
     rows.forEach((row, i) => {
       const y = tableY + i * rowHeight;
 
       if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
-      // LABEL
       doc.font("Helvetica-Bold").fontSize(12)
         .text(row[0], tableX + 10, y + 10, { width: col1Width - 20 });
 
-      // VALUE
-      let valueFontSize = 12;
-      if (row[0] === "Center" || row[0] === "Exam Name") {
-        valueFontSize = commonCenterExamFontSize;
-      } else {
-        valueFontSize = fitText(doc, row[1], col2Width - 20, 12, 8);
-      }
-
-      doc.font("Helvetica").fontSize(valueFontSize)
+      // 🔒 FIXED FONT SIZE (NO AUTO)
+      doc.font("Helvetica").fontSize(12)
         .text(String(row[1] ?? "-"),
           tableX + col1Width + 10,
           y + 10,
