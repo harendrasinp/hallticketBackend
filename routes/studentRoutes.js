@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const hallTicketInstructions = require("../utils/instructions");
 const data = require("../utils/data");
+
 /* ===== NAME NORMALIZER FUNCTION ===== */
 function normalizeName(name) {
   return name
@@ -39,25 +40,34 @@ router.post("/generate-hallticket", async (req, res) => {
     const inputName = fullName.trim().replace(/\s+/g, " ");
     mobile = mobile.trim();
 
-    const student = await Student.findOne({ mobile });
-    if (!student) {
+    /* ===== FIND ALL STUDENTS WITH THIS MOBILE ===== */
+    const students = await Student.find({ mobile });
+
+    if (students.length === 0) {
       return res.status(404).json({ message: "Mobile number not found" });
     }
 
-    if (normalizeName(inputName) !== normalizeName(student.fullName)) {
+    /* ===== FIND STUDENT WITH MATCHING NAME ===== */
+    const matchedStudent = students.find(
+      s => normalizeName(s.fullName) === normalizeName(inputName)
+    );
+
+    if (!matchedStudent) {
       return res.status(400).json({
-        message: "Full name does not match with mobile number"
+        message: "Full name does not match with this mobile number"
       });
     }
 
-    /* ===== FOLDER ===== */
+    const student = matchedStudent;
+
+    /* ===== CREATE HALLTICKET FOLDER IF NOT EXISTS ===== */
     const dir = path.join(__dirname, "../halltickets");
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
     const fileName = `${mobile}_${Date.now()}.pdf`;
     const filePath = path.join(dir, fileName);
 
-    /* ===== PDF ===== */
+    /* ===== PDF DOCUMENT ===== */
     const doc = new PDFDocument({ size: "A4", margin: 40 });
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
@@ -104,7 +114,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const col2Width = 260;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-    const lineY =180;
+    const lineY = 180;
 
     const nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width);
     doc.font("Helvetica-Bold").fontSize(nameFontSize)
@@ -118,15 +128,15 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ===== DETAILS TABLE ===== */
     const tableY = lineY + 30;
-    const rowHeight =30;
+    const rowHeight = 30;
 
     const rows = [
       ["Std", student.std],
       ["Medium", student.medium],
-      ["Center","P.P Savani Vidhyamandir,Katgadh"],
-      ["Exam Name","Talent Search Examination 2026"],
-      ["Exam Date","1-Feb-2026"],
-      ["Reporting Time","8:30 AM"],
+      ["Center", "P.P Savani Vidhyamandir,Katgadh"],
+      ["Exam Name", "Talent Search Examination 2026"],
+      ["Exam Date", "1-Feb-2026"],
+      ["Reporting Time", "8:30 AM"],
       ["Phone", student.mobile],
     ];
 
@@ -140,35 +150,25 @@ router.post("/generate-hallticket", async (req, res) => {
       if (i > 0) doc.moveTo(tableX, y).lineTo(tableX + tableWidth, y).stroke();
       doc.moveTo(tableX + col1Width, y).lineTo(tableX + col1Width, y + rowHeight).stroke();
 
-      // LABEL
       doc.font("Helvetica-Bold").fontSize(12)
         .text(label, tableX + 10, y + 10, { width: col1Width - 20 });
 
-      // VALUE FONT SIZE LOGIC
-      let valueFontSize =12;
-      if (label === "Center" || label === "Exam Name") {
-        valueFontSize =11; // 👈 ONE SIZE SMALLER
-      }
+      let valueFontSize = 12;
+      if (label === "Center" || label === "Exam Name") valueFontSize = 11;
 
       doc.font("Helvetica").fontSize(valueFontSize)
         .text(value,
           tableX + col1Width + 10,
           y + 10,
-          {
-            width: col2Width - 20,
-            lineBreak: false,
-            ellipsis: true
-          }
+          { width: col2Width - 20, lineBreak: false, ellipsis: true }
         );
     });
 
-    /* ===== INSTRUCTIONS (Gujarati font embed) ===== */
+    /* ===== INSTRUCTIONS ===== */
     const gujaratiFont = path.join(__dirname, "../fonts/NotoSansGujarati-Regular.ttf");
-
     doc.moveDown(2);
     doc.font(gujaratiFont).fontSize(12)
       .text("મહત્વપૂર્ણ સૂચનાઓ:", tableX, doc.y, { width: tableWidth });
-
     doc.moveDown(0.5);
     doc.font(gujaratiFont).fontSize(10);
     hallTicketInstructions.forEach((inst, i) => {
