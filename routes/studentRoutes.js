@@ -110,7 +110,7 @@ router.post("/generate-hallticket", async (req, res) => {
     doc.font("Helvetica-Bold").fontSize(nameFontSize)
       .text(`NAME: ${student.fullName}`, tableX, lineY, { width: col1Width });
 
-    doc.font("Helvetica-Bold").fontSize(12)
+    doc.font("Helvetica-Bold").fontSize(10)
       .text(`SEAT NO: ${student.rollNumber}`, tableX + col1Width, lineY, {
         width: col2Width,
         align: "right"
