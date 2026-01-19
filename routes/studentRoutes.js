@@ -161,13 +161,15 @@ router.post("/generate-hallticket", async (req, res) => {
         );
     });
 
-    /* ===== INSTRUCTIONS ===== */
+    /* ===== INSTRUCTIONS (Gujarati font embed) ===== */
+    const gujaratiFont = path.join(__dirname, "../fonts/NotoSansGujarati-Regular.ttf");
+
     doc.moveDown(2);
-    doc.font("Helvetica-Bold").fontSize(12)
-      .text("IMPORTANT INSTRUCTIONS:", tableX, doc.y, { width: tableWidth });
+    doc.font(gujaratiFont).fontSize(12)
+      .text("મહત્વપૂર્ણ સૂચનાઓ:", tableX, doc.y, { width: tableWidth });
 
     doc.moveDown(0.5);
-    doc.font("Helvetica").fontSize(10);
+    doc.font(gujaratiFont).fontSize(10);
     hallTicketInstructions.forEach((inst, i) => {
       doc.text(`${i + 1}. ${inst}`, { width: tableWidth, lineGap: 3 });
     });
