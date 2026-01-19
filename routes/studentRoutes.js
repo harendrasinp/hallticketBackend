@@ -104,7 +104,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const col2Width = 200;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-    const lineY = 200;
+    const lineY =150;
 
     const nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width);
     doc.font("Helvetica-Bold").fontSize(nameFontSize)
@@ -190,7 +190,7 @@ router.post("/generate-hallticket", async (req, res) => {
     /* ===== FOOTER ===== */
     doc.moveDown(6);
     doc.fontSize(10).text(
-      "Note: This hall ticket must be carried to the examination hall.",
+      "નોંધ: આ હોલ ટિકિટ પરીક્ષા હોલમાં લઇ જવાની ફરજિયાત છે.",
       0,
       doc.y,
       { width: pageWidth, align: "center" }
