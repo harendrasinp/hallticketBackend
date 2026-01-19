@@ -5,7 +5,7 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 const hallTicketInstructions = require("../utils/instructions");
-
+const data = require("../utils/data");
 /* ===== NAME NORMALIZER FUNCTION ===== */
 function normalizeName(name) {
   return name
@@ -87,17 +87,17 @@ router.post("/generate-hallticket", async (req, res) => {
     const textX = headerX + logoSize + gap;
 
     doc.font("Helvetica-Bold").fontSize(20)
-      .text("TAPI EDUCATION ACADEMY", textX, headerY, { width: textWidth, align: "center" });
+      .text(data.tapi, textX, headerY, { width: textWidth, align: "center" });
 
     doc.font("Helvetica-Bold").fontSize(15)
-      .text("P.P SAVANI VIDHYAMANDIR", textX, headerY + 26, { width: textWidth, align: "center" });
+      .text(data.schoolname, textX, headerY + 26, { width: textWidth, align: "center" });
 
     doc.font("Helvetica").fontSize(10)
-      .text("AT POST KATHGADH VYARA, DIST. TAPI", textX, headerY + 46, { width: textWidth, align: "center" });
+      .text(data.atpost, textX, headerY + 46, { width: textWidth, align: "center" });
 
     /* ===== TITLE ===== */
     doc.font("Helvetica-Bold").fontSize(18)
-      .text("HALL TICKET", 0, 130, { width: pageWidth, align: "center", underline: true });
+      .text(data.hallticket, 0, 130, { width: pageWidth, align: "center", underline: true });
 
     /* ===== NAME & SEAT NO ===== */
     const col1Width = 260;
@@ -190,7 +190,7 @@ router.post("/generate-hallticket", async (req, res) => {
     /* ===== FOOTER ===== */
     doc.moveDown(6);
     doc.fontSize(10).text(
-      "નોંધ: આ હોલ ટિકિટ પરીક્ષા હોલમાં લઇ જવાની ફરજિયાત છે.",
+      data.note,
       0,
       doc.y,
       { width: pageWidth, align: "center" }
