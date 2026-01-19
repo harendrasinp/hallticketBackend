@@ -1,23 +1,24 @@
 const hallTicketInstructions = [
- "Candidates must bring this Hall Ticket to the examination hall. Entry will not be allowed without a valid Hall Ticket.",
+"ઉમેદવારોએ પારદર્શક (ટ્રાન્સપેરન્ટ) પેપર પેડ તથા બ્લૂ અને બ્લેક રંગની પેન ફરજિયાત લાવવાની રહેશે."  ,
+ "ઉમેદવારોએ પરીક્ષા હોલમાં પ્રવેશ માટે આ હોલ ટિકિટ સાથે લાવવી ફરજિયાત છે. માન્ય હોલ ટિકિટ વગર પરીક્ષા હોલમાં પ્રવેશ આપવામાં આવશે નહીં.",
 
- "Carry a valid Photo Identity Proof (School ID / Aadhaar Card) along with the Hall Ticket.",
+ "હોલ ટિકિટ સાથે માન્ય ફોટો ઓળખપત્ર (શાળા ઓળખપત્ર / આધાર કાર્ડ) લાવવું ફરજિયાત છે.",
 
- "Candidates must reach the examination center at least 30 minutes before the scheduled time.",
+ "ઉમેદવારોએ નિર્ધારિત સમય કરતા ઓછામાં ઓછા 30 મિનિટ પહેલાં પરીક્ષા કેન્દ્ર પર હાજર રહેવું આવશ્યક છે",
 
- "Mobile phones, smart watches, calculators, Bluetooth devices, earphones, and any electronic gadgets are strictly prohibited inside the examination hall.",
+ "મોબાઇલ ફોન, સ્માર્ટ વોચ, કેલ્ક્યુલેટર, બ્લૂટૂથ ઉપકરણો, ઇયરફોન તેમજ કોઈપણ પ્રકારના ઇલેક્ટ્રોનિક સાધનો પરીક્ષા હોલમાં લાવવાનું કડક રીતે પ્રતિબંધિત છે.",
 
- "Books, notes, chits, papers, or any unfair material are not allowed.Possession of such items will be treated as unfair means and may lead to disqualification.",
+ "પુસ્તકો, નોંધો, ચીટ્સ, કાગળો અથવા કોઈપણ પ્રકારની અનૈતિક સામગ્રી લાવવાની મંજૂરી નથી. આવા સામાનનો કબજો મળ્યે અનૈતિક પદ્ધતિ ગણાશે અને ઉમેદવારી રદ થઈ શકે છે.",
 
- "Candidates must occupy their seats as per the seating arrangement mentioned by the invigilator.",
+ "ઉમેદવારોએ નિરીક્ષક દ્વારા જણાવવામાં આવેલી બેઠક વ્યવસ્થા મુજબ જ પોતાની બેઠક ગ્રહણ કરવી પડશે.",
 
- "Use of unfair means or misbehavior during the examination is a punishable offense.",
+ "પરીક્ષા દરમિયાન અનૈતિક સાધનોનો ઉપયોગ કે દુર્વ્યવહાર કરવો દંડનીય ગુનો ગણાશે.",
 
- "Candidates must follow all instructions given by the examination authority and invigilators.",
+ "ઉમેદવારોએ પરીક્ષા સત્તાધિકારીઓ તથા નિરીક્ષકો દ્વારા આપવામાં આવતી તમામ સૂચનાઓનું પાલન કરવું ફરજિયાત છે.",
 
- "The examination authority reserves the right to cancel the candidature of any candidate found violating the rules.",
+ "નિયમોનું ઉલ્લંઘન કરનાર કોઈપણ ઉમેદવારની ઉમેદવારી રદ કરવાનો અધિકાર પરીક્ષા સત્તાધિકારીઓ પાસે રહેશે.",
 
- "This Hall Ticket must be preserved until the completion of the examination process."
+ "પરીક્ષા પ્રક્રિયા પૂર્ણ ન થાય ત્યાં સુધી આ હોલ ટિકિટ સુરક્ષિત રીતે સાચવી રાખવી આવશ્યક છે."
 ];
 
 module.exports = hallTicketInstructions;
