@@ -35,18 +35,16 @@ const fixedData = data.map(row => {
   return row;
 });
 
-/* ===== INSERT INTO MONGODB WITHOUT DUPLICATES ===== */
+/* ===== INSERT INTO MONGODB ===== */
 (async () => {
   try {
-    for (let student of fixedData) {
-      // Check if student with same mobile already exists
-      const exists = await Student.findOne({ mobile: student.mobile });
-      if (!exists) {
-        await Student.create(student);
-      }
-    }
+    await Student.deleteMany({});
+    console.log("Old data deleted");
 
-    console.log("✅ Excel data MongoDB me insert ho gaya (no duplicates)");
+    /* ⭐⭐ YAHI LINE IMPORTANT HAI ⭐⭐ */
+    await Student.insertMany(fixedData);
+
+    console.log("✅ Excel data MongoDB me insert ho gaya");
     process.exit();
   } catch (err) {
     console.error(err);
