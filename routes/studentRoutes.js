@@ -145,9 +145,9 @@ router.post("/generate-hallticket", async (req, res) => {
         .text(label, tableX + 10, y + 10, { width: col1Width - 20 });
 
       // VALUE FONT SIZE LOGIC
-      let valueFontSize = 15;
+      let valueFontSize =12;
       if (label === "Center" || label === "Exam Name") {
-        valueFontSize =8; // 👈 ONE SIZE SMALLER
+        valueFontSize =12; // 👈 ONE SIZE SMALLER
       }
 
       doc.font("Helvetica").fontSize(valueFontSize)
