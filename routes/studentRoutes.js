@@ -100,8 +100,8 @@ router.post("/generate-hallticket", async (req, res) => {
       .text(data.hallticket, 0, 130, { width: pageWidth, align: "center", underline: true });
 
     /* ===== NAME & SEAT NO ===== */
-    const col1Width = 260;
-    const col2Width = 200;
+    const col1Width = 200;
+    const col2Width = 260;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
     const lineY =180;
