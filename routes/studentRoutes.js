@@ -123,8 +123,8 @@ router.post("/generate-hallticket", async (req, res) => {
     const rows = [
       ["Std", student.std],
       ["Medium", student.medium],
-      ["Center", student.center],
-      ["Exam Name", student.examName],
+      ["Center","P.P Savani Vidhyamandir,Katgadh"],
+      ["Exam Name","Talent Search Examination 2026"],
       ["Exam Date","1-Feb-2026"],
       ["Reporting Time","8:30 AM"],
       ["Phone", student.mobile],
@@ -147,7 +147,7 @@ router.post("/generate-hallticket", async (req, res) => {
       // VALUE FONT SIZE LOGIC
       let valueFontSize = 12;
       if (label === "Center" || label === "Exam Name") {
-        valueFontSize = 11; // 👈 ONE SIZE SMALLER
+        valueFontSize =8; // 👈 ONE SIZE SMALLER
       }
 
       doc.font("Helvetica").fontSize(valueFontSize)

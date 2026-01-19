@@ -12,8 +12,6 @@ const studentSchema = new mongoose.Schema({
   std:String,
   medium: String,
   rollNumber: String,
-  center: String,
-  examName: String,
 });
 
 module.exports = mongoose.model("Student", studentSchema);
