@@ -104,7 +104,7 @@ router.post("/generate-hallticket", async (req, res) => {
     const col2Width = 200;
     const tableWidth = col1Width + col2Width;
     const tableX = centerX - tableWidth / 2;
-    const lineY =150;
+    const lineY =180;
 
     const nameFontSize = fitText(doc, `NAME: ${student.fullName}`, col1Width);
     doc.font("Helvetica-Bold").fontSize(nameFontSize)
