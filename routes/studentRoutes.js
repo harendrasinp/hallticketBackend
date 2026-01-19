@@ -118,14 +118,15 @@ router.post("/generate-hallticket", async (req, res) => {
 
     /* ===== DETAILS TABLE ===== */
     const tableY = lineY + 30;
-    const rowHeight = 34;
+    const rowHeight =30;
 
     const rows = [
       ["Std", student.std],
       ["Medium", student.medium],
       ["Center", student.center],
       ["Exam Name", student.examName],
-      ["Exam Date", student.examDate],
+      ["Exam Date","1-Feb-2026"],
+      ["Reporting Time","8:30 AM"],
       ["Phone", student.mobile],
     ];
 

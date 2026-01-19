@@ -12,7 +12,6 @@ const studentSchema = new mongoose.Schema({
   std:String,
   medium: String,
   rollNumber: String,
-  examDate: String,
   center: String,
   examName: String,
 });
