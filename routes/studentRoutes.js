@@ -136,7 +136,7 @@ router.post("/generate-hallticket", async (req, res) => {
       ["Center", "P.P Savani Vidhyamandir,Katgadh"],
       ["Exam Name", "Talent Search Examination 2026"],
       ["Exam Date", "1-Feb-2026"],
-      ["Reporting Time", "8:30 AM"],
+      ["Reporting Time", "8:15 AM"],
       ["Phone", student.mobile],
     ];
 
