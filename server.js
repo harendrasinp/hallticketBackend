@@ -6,7 +6,10 @@ const path = require("path");
 const studentRoutes = require("./routes/studentRoutes"); // hallticket route
 
 const app = express();
-
+// ------- health check route -------
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 /* ===== MIDDLEWARE ===== */
 app.use(cors());
 app.use(express.json());

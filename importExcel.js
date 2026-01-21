@@ -11,7 +11,7 @@ mongoose
   .catch(err => console.log(err));
 
 /* ===== Read Excel ===== */
-const workbook = xlsx.readFile("students.xlsx");
+const workbook = xlsx.readFile("demodata.xlsx");
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
 /* ===== Convert Sheet to JSON ===== */
@@ -35,16 +35,13 @@ const fixedData = data.map(row => {
   return row;
 });
 
-/* ===== INSERT INTO MONGODB ===== */
+/* ===== INSERT INTO MONGODB (APPEND ONLY) ===== */
 (async () => {
   try {
-    await Student.deleteMany({});
-    console.log("Old data deleted");
-
-    /* ⭐⭐ YAHI LINE IMPORTANT HAI ⭐⭐ */
+   
     await Student.insertMany(fixedData);
 
-    console.log("✅ Excel data MongoDB me insert ho gaya");
+    console.log("✅ New Excel data APPEND ho gaya (purana data safe hai)");
     process.exit();
   } catch (err) {
     console.error(err);
