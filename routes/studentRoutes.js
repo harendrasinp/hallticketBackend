@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../models/Students");
 const PDFDocument = require("pdfkit");
-const fs = require("fs");
-const path = require("path");
 const hallTicketInstructions = require("../utils/instructions");
 const data = require("../utils/data");
 
@@ -19,7 +17,7 @@ function fitText(doc, text, maxWidth, startSize = 14, minSize = 9) {
 }
 
 /* ======================================================
-   1️⃣ GET STUDENTS BY MOBILE (NEW API)
+   1️⃣ GET STUDENTS BY MOBILE (UNCHANGED)
 ====================================================== */
 router.post("/get-students-by-mobile", async (req, res) => {
   try {
@@ -50,7 +48,7 @@ router.post("/get-students-by-mobile", async (req, res) => {
 });
 
 /* ======================================================
-   2️⃣ GENERATE HALL TICKET (FULL PDF – UPDATED)
+   2️⃣ GENERATE HALL TICKET (MEMORY-BASED, NO SAVE)
 ====================================================== */
 router.post("/generate-hallticket", async (req, res) => {
   try {
@@ -65,17 +63,18 @@ router.post("/generate-hallticket", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    /* ===== CREATE FOLDER ===== */
-    const dir = path.join(__dirname, "../halltickets");
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-
-    const fileName = `${student.mobile}_${Date.now()}.pdf`;
-    const filePath = path.join(dir, fileName);
-
-    /* ===== PDF DOCUMENT ===== */
+    /* ===== CREATE PDF DOCUMENT ===== */
     const doc = new PDFDocument({ size: "A4", margin: 40 });
-    const stream = fs.createWriteStream(filePath);
-    doc.pipe(stream);
+
+    // Memory-based PDF
+    let chunks = [];
+    doc.on("data", chunk => chunks.push(chunk));
+    doc.on("end", () => {
+      const result = Buffer.concat(chunks);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename=hallticket_${student.mobile}.pdf`);
+      res.send(result);
+    });
 
     const pageWidth = doc.page.width;
     const centerX = pageWidth / 2;
@@ -207,14 +206,8 @@ router.post("/generate-hallticket", async (req, res) => {
       align: "center"
     });
 
+    /* ===== END PDF ===== */
     doc.end();
-
-    stream.on("finish", () => {
-      res.json({
-        success: true,
-        pdfUrl: `/halltickets/${fileName}`
-      });
-    });
 
   } catch (err) {
     console.error(err);
