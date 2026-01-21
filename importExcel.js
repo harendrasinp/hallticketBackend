@@ -11,7 +11,7 @@ mongoose
   .catch(err => console.log(err));
 
 /* ===== Read Excel ===== */
-const workbook = xlsx.readFile("demodata.xlsx");
+const workbook = xlsx.readFile("newdata.xlsx");
 const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
 /* ===== Convert Sheet to JSON ===== */
